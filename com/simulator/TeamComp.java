@@ -33,18 +33,24 @@ public class TeamComp {
 
    // Team composition logic methods
    public void addAgent(String in) {
+      if (canInputAgent(in)) {
+         teamComposition.add(AgentList.getAgentByName(in));
+         numAgents++;
+         if (numAgents == 5) {
+            addStats();
+         }
+         return;
+      }
+      LOGGER.log(java.util.logging.Level.WARNING, "Invalid input: {0}", in);
+   }
+
+   public boolean canInputAgent(String in) {
       for (Agent ag : AgentList.getList()) {
-         boolean inputIsAnAgent = ag.getName().equalsIgnoreCase(in);
-         if (inputIsAnAgent) {
-            teamComposition.add(ag);
-            numAgents++;
-            if (numAgents == 5)
-               addStats();
-            return;
+         if (ag.getName().equalsIgnoreCase(in)) {
+            return true;
          }
       }
-      LOGGER.log(java.util.logging.Level.WARNING, "Invalid input: {0}. Ending run.", in);
-      System.exit(0);
+      return false;
    }
 
    public void setStyle() {
@@ -79,13 +85,7 @@ public class TeamComp {
    }
 
    public Agent getAgent(String name) {
-      for (Agent agent : teamComposition) {
-         if (agent.getName().equalsIgnoreCase(name)) {
-            return agent;
-         }
-      }
-      LOGGER.log(java.util.logging.Level.WARNING, "Agent {0} not found in team composition.", name);
-      return null;
+      return AgentList.getAgentByName(name);
    }
 
    public double getTotalAggro() {

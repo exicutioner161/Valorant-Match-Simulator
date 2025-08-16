@@ -5,6 +5,7 @@ import java.util.List;
 
 public class AgentList {
    private AgentList() {
+      // Utility class - do not instantiate
    }
 
    private static final ArrayList<Agent> list = new ArrayList<>();
@@ -31,8 +32,8 @@ public class AgentList {
    private static final Agent phoenix = new Agent("Phoenix", DUELIST, 6, 2, 2, 4);
    private static final Agent raze = new Agent("Raze", DUELIST, 6, 1, 3, 9);
    private static final Agent reyna = new Agent("Reyna", DUELIST, 8, 0, 2, 4);
-   private static final Agent sage = new Agent("Sage", SENTINEL, 1, 5, 4, 2);
-   private static final Agent skye = new Agent("Skye", INITIATOR, 2, 2, 6, 4);
+   private static final Agent sage = new Agent("Sage", SENTINEL, 1, 5, 4, 3);
+   private static final Agent skye = new Agent("Skye", INITIATOR, 2, 2, 6, 5);
    private static final Agent sova = new Agent("Sova", INITIATOR, 1, 6, 3, 8);
    private static final Agent tejo = new Agent("Tejo", INITIATOR, 6, 1, 3, 4);
    private static final Agent viper = new Agent("Viper", CONTROLLER, 3, 5, 2, 10);
@@ -133,5 +134,14 @@ public class AgentList {
 
    public static List<Agent> getList() {
       return list;
+   }
+
+   public static Agent getAgentByName(String name) {
+      for (Agent agent : list) {
+         if (agent.getName().equalsIgnoreCase(name)) {
+            return agent;
+         }
+      }
+      return null;
    }
 }

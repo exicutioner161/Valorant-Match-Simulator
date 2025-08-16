@@ -101,7 +101,12 @@ public class MatchSimulator {
          if (in.equalsIgnoreCase("exit")) {
             System.exit(0);
          } else {
-            one.addAgent(in);
+            if (one.canInputAgent(in)) {
+               one.addAgent(in);
+            } else {
+               System.out.println("Invalid agent name. Please try again.");
+               i--;
+            }
          }
       }
    }
@@ -112,7 +117,12 @@ public class MatchSimulator {
          if (in.equalsIgnoreCase("exit")) {
             System.exit(0);
          } else {
-            two.addAgent(in);
+            if (two.canInputAgent(in)) {
+               two.addAgent(in);
+            } else {
+               System.out.println("Invalid agent name. Please try again.");
+               i--;
+            }
          }
       }
    }
@@ -125,7 +135,7 @@ public class MatchSimulator {
    // Round simulation methods
    public void simulateRound() {
       setTeamStyles();
-      t1Chance = 50 + getTeam1Advantage();
+      t1Chance = 50 + calculateTeam1Advantage();
       t1HasBetterOdds = random.nextDouble() < (t1Chance / 100.0);
 
       if (t1Chance == 50) {
@@ -152,7 +162,7 @@ public class MatchSimulator {
 
    public void simulateRoundFast() {
       setTeamStyles();
-      t1Chance = 50 + getTeam1Advantage();
+      t1Chance = 50 + calculateTeam1Advantage();
       t1HasBetterOdds = random.nextDouble() < (t1Chance / 100.0);
 
       if (t1Chance == 50) {
@@ -202,7 +212,7 @@ public class MatchSimulator {
       }
    }
 
-   public double getTeam1Advantage() {
+   public double calculateTeam1Advantage() {
       double adv = random.nextDouble() * 4 + 1;
       setRelativePowerAdvantage();
 
@@ -231,24 +241,18 @@ public class MatchSimulator {
       double totalRelativePowerDelta = Math.abs(one.getTotalRelativePower() - two.getTotalRelativePower());
 
       // Team 1 has more relative power
-      while (one.getTotalRelativePower() > two.getTotalRelativePower() && count < totalRelativePowerDelta) {
-         cachedRelativePowerAdvantage += 0.2;
-         count++;
-      }
-
-      // Team 2 has more relative power
-      while (one.getTotalRelativePower() < two.getTotalRelativePower() && count < totalRelativePowerDelta) {
-         cachedRelativePowerAdvantage -= 0.2;
-         count++;
+      if (one.getTotalRelativePower() > two.getTotalRelativePower()) {
+         while (count < totalRelativePowerDelta) {
+            cachedRelativePowerAdvantage += 0.2;
+            count++;
+         }
+      } else if (one.getTotalRelativePower() < two.getTotalRelativePower()) { // Team 2 has more relative power
+         while (count < totalRelativePowerDelta) {
+            cachedRelativePowerAdvantage -= 0.2;
+            count++;
+         }
       }
       relativePowerAdvantageCalculated = true;
-   }
-
-   public double getRelativePowerAdvantage() {
-      if (!relativePowerAdvantageCalculated) {
-         setRelativePowerAdvantage();
-      }
-      return cachedRelativePowerAdvantage;
    }
 
    public void setAttackerMapAdvantage() {
@@ -268,13 +272,6 @@ public class MatchSimulator {
       default -> 0.0;
       };
       mapAdvantageCalculated = true;
-   }
-
-   public double getAttackerMapAdvantage() {
-      if (!mapAdvantageCalculated) {
-         setAttackerMapAdvantage();
-      }
-      return cachedMapAdvantage;
    }
 
    // Game state check methods
@@ -333,15 +330,15 @@ public class MatchSimulator {
    }
 
    // Getter methods
+   public String getMap() {
+      return map;
+   }
+
    public int getMatchWinner() {
       if (t1Rounds > t2Rounds) {
          return 1;
       }
       return 2;
-   }
-
-   public String getMap() {
-      return map;
    }
 
    public int getTeam1TotalRounds() {
@@ -382,5 +379,19 @@ public class MatchSimulator {
 
    public int getAttackingTeam() {
       return attackingTeam;
+   }
+
+   public double getRelativePowerAdvantage() {
+      if (!relativePowerAdvantageCalculated) {
+         setRelativePowerAdvantage();
+      }
+      return cachedRelativePowerAdvantage;
+   }
+
+   public double getAttackerMapAdvantage() {
+      if (!mapAdvantageCalculated) {
+         setAttackerMapAdvantage();
+      }
+      return cachedMapAdvantage;
    }
 }
