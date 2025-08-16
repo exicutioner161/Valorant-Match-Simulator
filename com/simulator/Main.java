@@ -15,7 +15,8 @@ public class Main {
       Logger logger = Logger.getLogger(Main.class.getName());
 
       // Set up simulation parameters
-      System.out.println("\nEnter the agents for each team and the map name. Type 'exit' to quit.");
+      System.out.println(
+            "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nEnter the agents for each team and the map name. Type 'exit' to quit.");
       try (Scanner input = new Scanner(System.in)) {
          System.out.println("Enter 5 agents for Team 1:");
          match.inputTeam1Agents();
@@ -23,9 +24,10 @@ public class Main {
          System.out.println("Enter 5 agents for Team 2:");
          match.inputTeam2Agents();
 
-         System.out.println("""
-               Enter a map name. This will be used for map advantage calculations.
-               Available maps: Ascent, Bind, Breeze, Fracture, Haven, Icebox, Lotus, Pearl, Split, and Sunset.""");
+         System.out.println(
+               """
+                     Enter a map name. This will be used for map advantage calculations.
+                     Available maps: Ascent, Bind, Breeze, Corrode, Fracture, Haven, Icebox, Lotus, Pearl, Split, and Sunset.""");
          match.setMap(input.nextLine());
 
          System.out.println("Enter the number of matches to simulate:");
@@ -35,7 +37,7 @@ public class Main {
             System.out.println("Invalid input. Defaulting to 1 match.");
          }
 
-         input.nextLine();
+         input.nextLine(); // Consume newline
 
          System.out.println("Do you want to run a fast simulation? (Y/N)");
          in = input.nextLine();
@@ -46,6 +48,7 @@ public class Main {
          logger.log(Level.SEVERE, "An error occurred while reading input", e);
       }
 
+      // Start measuring elapsed time
       double start = System.nanoTime();
 
       // Run simulations
@@ -69,9 +72,9 @@ public class Main {
             + "\nTotal rounds won by Team 1 vs Team 2: " + match.getTeam1TotalRounds() + "-"
             + match.getTeam2TotalRounds() + "\n50/50 wins won by Team 1 vs Team 2: " + match.getTeam1FiftyFiftyWins()
             + "-" + match.getTeam2FiftyFiftyWins() + "\nMap: " + match.getMap().toUpperCase() + "\n");
+
       // Calculate and log elapsed time
       double elapsed = (System.nanoTime() - start) / 1000000;
-
       logger.log(Level.INFO, "{0} ms elapsed ({1} seconds)", new Object[] { elapsed, Math.round(elapsed) / 1000.0 });
    }
 }

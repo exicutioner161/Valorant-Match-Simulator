@@ -6,14 +6,15 @@ import java.util.Random;
 import java.util.logging.Logger;
 
 public class TeamComp {
-   private int aggro;
-   private int control;
-   private int midrange;
-   private int numAgents = 0;
+   private double aggro;
+   private double control;
+   private double midrange;
+   private double maxTotalPoints;
+   private double totalRelativePower;
+   private int numAgents;
    private Style style;
    private final ArrayList<Agent> teamComposition;
    private final Random random = new Random();
-   private static final AgentList list = new AgentList();
    private static final Logger LOGGER = Logger.getLogger(TeamComp.class.getName());
 
    public enum Style {
@@ -25,11 +26,14 @@ public class TeamComp {
       aggro = 0;
       control = 0;
       midrange = 0;
+      numAgents = 0;
+      maxTotalPoints = 0;
+      totalRelativePower = 0;
    }
 
    // Team composition logic methods
    public void addAgent(String in) {
-      for (Agent ag : list.getList()) {
+      for (Agent ag : AgentList.getList()) {
          boolean inputIsAnAgent = ag.getName().equalsIgnoreCase(in);
          if (inputIsAnAgent) {
             teamComposition.add(ag);
@@ -44,14 +48,14 @@ public class TeamComp {
    }
 
    public void setStyle() {
-      double styleRoll = random.nextDouble() * 50;
+      double styleRoll = random.nextDouble() * maxTotalPoints;
       // Style assignment boundaries:
       // Aggro: [0, aggro)
-      // Control: [aggro, 50 - midrange)
-      // Midrange: [50 - midrange, 50)
+      // Control: [aggro, maxTotalPoints - midrange)
+      // Midrange: [maxTotalPoints - midrange, maxTotalPoints)
       if (styleRoll < aggro) {
          style = Style.AGGR;
-      } else if (styleRoll < 50 - midrange) {
+      } else if (styleRoll < maxTotalPoints - midrange) {
          style = Style.CONTR;
       } else {
          style = Style.MIDR;
@@ -84,16 +88,20 @@ public class TeamComp {
       return null;
    }
 
-   public int getTotalAggro() {
+   public double getTotalAggro() {
       return aggro;
    }
 
-   public int getTotalControl() {
+   public double getTotalControl() {
       return control;
    }
 
-   public int getTotalMidrange() {
+   public double getTotalMidrange() {
       return midrange;
+   }
+
+   public double getTotalRelativePower() {
+      return totalRelativePower;
    }
 
    // Statistics methods
@@ -102,7 +110,9 @@ public class TeamComp {
          aggro += ag.getAggro();
          control += ag.getControl();
          midrange += ag.getMidrange();
+         totalRelativePower += ag.getRelativePower();
       }
+      maxTotalPoints = aggro + control + midrange;
    }
 
    public void resetStats() {
@@ -113,8 +123,9 @@ public class TeamComp {
    }
 
    public void printStats() {
-      System.out.printf("Total Points in Each Style:%nAggro: %d%nControl: %d%nMidrange: %d%n%nAgent Stats:%n", aggro,
-            control, midrange);
+      System.out.printf(
+            "Total Points in Each Style:%nAggro: %.1f%nControl: %.1f%nMidrange: %.1f%nTotal Relative Power: %.1f%n%nAgent Stats:%n",
+            aggro, control, midrange, totalRelativePower);
       for (Agent ag : teamComposition) {
          System.out.println(ag.toString());
       }

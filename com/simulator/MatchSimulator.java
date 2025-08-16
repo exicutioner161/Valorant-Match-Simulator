@@ -18,7 +18,9 @@ public class MatchSimulator {
    private double t1Chance;
    private boolean t1HasBetterOdds;
    private double cachedMapAdvantage;
+   private double cachedRelativePowerAdvantage;
    private boolean mapAdvantageCalculated = false;
+   private boolean relativePowerAdvantageCalculated = false;
    private String map;
    private final Scanner input = new Scanner(System.in);
    private final Random random = new Random();
@@ -43,6 +45,8 @@ public class MatchSimulator {
 
    // Match simulation methods
    public void simulateMatch() {
+      setAttackerMapAdvantage();
+
       for (int i = 0; i < 12; i++) {
          simulateRound();
       }
@@ -67,6 +71,8 @@ public class MatchSimulator {
    }
 
    public void simulateMatchFast() {
+      setAttackerMapAdvantage();
+
       for (int i = 0; i < 12; i++) {
          simulateRoundFast();
       }
@@ -198,41 +204,75 @@ public class MatchSimulator {
 
    public double getTeam1Advantage() {
       double adv = random.nextDouble() * 4 + 1;
+      setRelativePowerAdvantage();
+
       if (attackingTeam == 1) { // Team 1 is attacking
+         double team1AttackerAdv = cachedRelativePowerAdvantage + cachedMapAdvantage;
          if (one.canCounter(two)) {
-            return adv + getAttackerMapAdvantage();
+            return adv + team1AttackerAdv;
          } else if (two.canCounter(one)) {
-            return -adv + getAttackerMapAdvantage();
+            return -adv + team1AttackerAdv;
          }
-         return getAttackerMapAdvantage();
+         return team1AttackerAdv;
       } else { // Team 2 is attacking
+         double team2AttackerAdv = cachedRelativePowerAdvantage - cachedMapAdvantage;
          if (one.canCounter(two)) {
-            return adv - getAttackerMapAdvantage();
+            return adv + team2AttackerAdv;
          } else if (two.canCounter(one)) {
-            return -adv - getAttackerMapAdvantage();
+            return -adv + team2AttackerAdv;
          }
-         return -getAttackerMapAdvantage();
+         return team2AttackerAdv;
       }
+   }
+
+   public void setRelativePowerAdvantage() {
+      cachedRelativePowerAdvantage = 0;
+      int count = 0;
+      double totalRelativePowerDelta = Math.abs(one.getTotalRelativePower() - two.getTotalRelativePower());
+
+      // Team 1 has more relative power
+      while (one.getTotalRelativePower() > two.getTotalRelativePower() && count < totalRelativePowerDelta) {
+         cachedRelativePowerAdvantage += 0.2;
+         count++;
+      }
+
+      // Team 2 has more relative power
+      while (one.getTotalRelativePower() < two.getTotalRelativePower() && count < totalRelativePowerDelta) {
+         cachedRelativePowerAdvantage -= 0.2;
+         count++;
+      }
+      relativePowerAdvantageCalculated = true;
+   }
+
+   public double getRelativePowerAdvantage() {
+      if (!relativePowerAdvantageCalculated) {
+         setRelativePowerAdvantage();
+      }
+      return cachedRelativePowerAdvantage;
+   }
+
+   public void setAttackerMapAdvantage() {
+      cachedMapAdvantage = switch (map) {
+      case "abyss" -> -0.1;
+      case "ascent" -> -5.05;
+      case "bind" -> -3.81;
+      case "breeze" -> 1.11;
+      case "corrode" -> -0.96;
+      case "fracture" -> 1;
+      case "haven" -> -1.68;
+      case "icebox" -> -1.35;
+      case "lotus" -> 0.57;
+      case "pearl" -> -1.6;
+      case "split" -> -3.3;
+      case "sunset" -> -1.39;
+      default -> 0.0;
+      };
+      mapAdvantageCalculated = true;
    }
 
    public double getAttackerMapAdvantage() {
       if (!mapAdvantageCalculated) {
-         cachedMapAdvantage = switch (map) {
-         case "abyss" -> -0.1;
-         case "ascent" -> -5.05;
-         case "bind" -> -3.81;
-         case "breeze" -> 1.11;
-         case "corrode" -> -0.96;
-         case "fracture" -> 1;
-         case "haven" -> -1.68;
-         case "icebox" -> -1.35;
-         case "lotus" -> 0.57;
-         case "pearl" -> -1.6;
-         case "split" -> -3.3;
-         case "sunset" -> -1.39;
-         default -> 0.0;
-         };
-         mapAdvantageCalculated = true;
+         setAttackerMapAdvantage();
       }
       return cachedMapAdvantage;
    }

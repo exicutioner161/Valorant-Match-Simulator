@@ -3,39 +3,18 @@ package com.simulator;
 public class Agent {
    private final String name;
    private final String role;
-   private final int ability1; // Signature ability / "E" ability
-   private final int ability2; // "Q" ability
-   private final int ability3; // "C" ability
-   private final int maxUltPoints; // Ultimate ability
-   private int currentUltPoints; // Current ultimate points
-   private final int aggr;
-   private final int cont;
-   private final int midr;
+   private double relativePower;
+   private double aggr;
+   private double cont;
+   private double midr;
 
-   public Agent(String nam, String rol, int eAbility, int qAbility, int cAbility, int maximumUltPoints, int aggro,
-         int control, int midrange) {
+   public Agent(String nam, String rol, double aggro, double control, double midrange, double relPower) {
       name = nam;
       role = rol;
-      ability1 = eAbility;
-      ability2 = qAbility;
-      ability3 = cAbility;
-      maxUltPoints = maximumUltPoints;
-      currentUltPoints = 0;
       aggr = aggro;
       cont = control;
       midr = midrange;
-   }
-
-   public void incrementUltPoints() {
-      if (currentUltPoints < maxUltPoints) {
-         currentUltPoints++;
-      } else {
-         currentUltPoints = maxUltPoints;
-      }
-   }
-
-   public void resetUltPoints() {
-      currentUltPoints = 0;
+      relativePower = relPower;
    }
 
    public String getName() {
@@ -46,40 +25,67 @@ public class Agent {
       return role;
    }
 
-   public int getAbility1() {
-      return ability1;
-   }
-
-   public int getAbility2() {
-      return ability2;
-   }
-
-   public int getAbility3() {
-      return ability3;
-   }
-
-   public int getMaxUltPoints() {
-      return maxUltPoints;
-   }
-
-   public int getCurrentUltPoints() {
-      return currentUltPoints;
-   }
-
-   public int getAggro() {
+   public double getAggro() {
       return aggr;
    }
 
-   public int getControl() {
+   public double getControl() {
       return cont;
    }
 
-   public int getMidrange() {
+   public double getMidrange() {
       return midr;
+   }
+
+   public double getRelativePower() {
+      return relativePower;
+   }
+
+   public void increaseRelativePower(double amount) {
+      if (amount > 0) {
+         relativePower += amount;
+      }
+   }
+
+   public void increaseAggro(double amount) {
+      if (amount > 0) {
+         aggr += amount;
+      }
+   }
+
+   public void increaseControl(double amount) {
+      if (amount > 0) {
+         cont += amount;
+      }
+   }
+
+   public void increaseMidrange(double amount) {
+      if (amount > 0) {
+         midr += amount;
+      }
+   }
+
+   public void multiplyAggro(double factor) {
+      if (factor > 0) {
+         aggr *= factor;
+      }
+   }
+
+   public void multiplyControl(double factor) {
+      if (factor > 0) {
+         cont *= factor;
+      }
+   }
+
+   public void multiplyMidrange(double factor) {
+      if (factor > 0) {
+         midr *= factor;
+      }
    }
 
    @Override
    public String toString() {
-      return name + ", " + aggr + "/" + cont + "/" + midr;
+      return name + ", " + (Math.round(aggr * 10000.0) / 10000.0) + "/" + (Math.round(cont * 10000.0) / 10000.0) + "/"
+            + (Math.round(midr * 10000.0) / 10000.0) + ", Relative Power: " + relativePower;
    }
 }
