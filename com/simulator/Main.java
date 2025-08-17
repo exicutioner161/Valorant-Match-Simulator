@@ -1,5 +1,6 @@
 package com.simulator;
 
+import java.text.NumberFormat;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -13,6 +14,7 @@ public class Main {
       String in;
       boolean fastSimulation = true;
       Logger logger = Logger.getLogger(Main.class.getName());
+      NumberFormat numberFormat = NumberFormat.getInstance();
 
       // Set up simulation parameters
       System.out.println(
@@ -27,8 +29,15 @@ public class Main {
          System.out.println(
                """
                      Enter a map name. This will be used for map advantage calculations.
-                     Available maps: Ascent, Bind, Breeze, Corrode, Fracture, Haven, Icebox, Lotus, Pearl, Split, and Sunset.""");
+                     Available maps: Ascent, Bind, Breeze, Corrode, Fracture, Haven, Icebox, Lotus, Pearl, Split, Sunset, or N/A.""");
          match.setMap(input.nextLine());
+
+         System.out.println("Enter the attacking team (1 or 2):");
+         if (input.hasNextInt()) {
+            match.setAttackingTeam(input.nextInt());
+         } else {
+            System.out.println("Invalid input. Defaulting to Team 1.");
+         }
 
          System.out.println("Enter the number of matches to simulate:");
          if (input.hasNextInt()) {
@@ -68,13 +77,16 @@ public class Main {
       System.out.println("Team 2 stats:");
       two.printStats();
 
-      System.out.println("Match record: " + match.getTeam1MatchWins() + "-" + match.getTeam2MatchWins()
-            + "\nTotal rounds won by Team 1 vs Team 2: " + match.getTeam1TotalRounds() + "-"
-            + match.getTeam2TotalRounds() + "\n50/50 wins won by Team 1 vs Team 2: " + match.getTeam1FiftyFiftyWins()
-            + "-" + match.getTeam2FiftyFiftyWins() + "\nMap: " + match.getMap().toUpperCase() + "\n");
+      System.out.println("Number of matches simulated: " + numberFormat.format(matches) + "\nMatch record: "
+            + numberFormat.format(match.getTeam1MatchWins()) + "-" + numberFormat.format(match.getTeam2MatchWins())
+            + "\nTotal rounds won by Team 1 vs Team 2: " + numberFormat.format(match.getTeam1TotalRounds()) + "-"
+            + numberFormat.format(match.getTeam2TotalRounds()) + "\n50/50 wins won by Team 1 vs Team 2: "
+            + numberFormat.format(match.getTeam1FiftyFiftyWins()) + "-"
+            + numberFormat.format(match.getTeam2FiftyFiftyWins()) + "\nMap: " + match.getMap().toUpperCase() + "\n");
 
       // Calculate and log elapsed time
       double elapsed = (System.nanoTime() - start) / 1000000;
-      logger.log(Level.INFO, "{0} ms elapsed ({1} seconds)", new Object[] { elapsed, Math.round(elapsed) / 1000.0 });
+      logger.log(Level.INFO, "{0} ms elapsed ({1} seconds)",
+            new Object[] { elapsed, numberFormat.format(Math.round(elapsed) / 1000.0) });
    }
 }

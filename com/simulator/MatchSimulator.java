@@ -5,22 +5,22 @@ import java.util.Scanner;
 
 public class MatchSimulator {
    private int currentRound;
-   private int t1Rounds;
-   private int t2Rounds;
+   private int team1Rounds;
+   private int team2Rounds;
    private int attackingTeam;
-   private int t1MatchWins;
-   private int t2MatchWins;
-   private int t1TotalRounds;
-   private int t2TotalRounds;
+   private int team1MatchWins;
+   private int team2MatchWins;
+   private int team1TotalRounds;
+   private int team2TotalRounds;
    private int currentRoundWinner;
    private int team1FiftyFiftyWins;
    private int team2FiftyFiftyWins;
-   private double t1Chance;
-   private boolean t1HasBetterOdds;
+   private double team1Chance;
+   private boolean team1HasBetterOdds;
    private double cachedMapAdvantage;
    private double cachedRelativePowerAdvantage;
-   private boolean mapAdvantageCalculated = false;
-   private boolean relativePowerAdvantageCalculated = false;
+   private boolean mapAdvantageCalculated;
+   private boolean relativePowerAdvantageCalculated;
    private String map;
    private final Scanner input = new Scanner(System.in);
    private final Random random = new Random();
@@ -29,15 +29,17 @@ public class MatchSimulator {
 
    public MatchSimulator(TeamComp first, TeamComp second) {
       currentRound = 1;
-      t1Rounds = 0;
-      t2Rounds = 0;
-      t1MatchWins = 0;
-      t2MatchWins = 0;
-      t1TotalRounds = 0;
-      t2TotalRounds = 0;
+      team1Rounds = 0;
+      team2Rounds = 0;
+      team1MatchWins = 0;
+      team2MatchWins = 0;
+      team1TotalRounds = 0;
+      team2TotalRounds = 0;
       attackingTeam = 1;
       team1FiftyFiftyWins = 0;
       team2FiftyFiftyWins = 0;
+      mapAdvantageCalculated = false;
+      relativePowerAdvantageCalculated = false;
       map = "ascent";
       one = first;
       two = second;
@@ -58,7 +60,7 @@ public class MatchSimulator {
       }
 
       if (overtimeIsReached()) {
-         while (roundDeltaIsNot2()) {
+         while (roundDeltaIsNoteam2()) {
             switchSides();
             simulateRound();
          }
@@ -84,7 +86,7 @@ public class MatchSimulator {
       }
 
       if (overtimeIsReached()) {
-         while (roundDeltaIsNot2()) {
+         while (roundDeltaIsNoteam2()) {
             switchSides();
             simulateRoundFast();
          }
@@ -96,32 +98,36 @@ public class MatchSimulator {
    }
 
    public void inputTeam1Agents() {
-      for (int i = 0; i < 5; i++) {
+      int validAgentsAdded = 0;
+
+      while (validAgentsAdded < 5) {
          String in = input.nextLine();
          if (in.equalsIgnoreCase("exit")) {
             System.exit(0);
          } else {
             if (one.canInputAgent(in)) {
                one.addAgent(in);
+               validAgentsAdded++;
             } else {
                System.out.println("Invalid agent name. Please try again.");
-               i--;
             }
          }
       }
    }
 
    public void inputTeam2Agents() {
-      for (int i = 0; i < 5; i++) {
+      int validAgentsAdded = 0;
+
+      while (validAgentsAdded < 5) {
          String in = input.nextLine();
          if (in.equalsIgnoreCase("exit")) {
             System.exit(0);
          } else {
             if (two.canInputAgent(in)) {
                two.addAgent(in);
+               validAgentsAdded++;
             } else {
                System.out.println("Invalid agent name. Please try again.");
-               i--;
             }
          }
       }
@@ -135,51 +141,57 @@ public class MatchSimulator {
    // Round simulation methods
    public void simulateRound() {
       setTeamStyles();
-      t1Chance = 50 + calculateTeam1Advantage();
-      t1HasBetterOdds = random.nextDouble() < (t1Chance / 100.0);
+      team1Chance = 50 + calculateTeam1Advantage();
+      team1HasBetterOdds = random.nextDouble() < (team1Chance / 100.0);
 
-      if (t1Chance == 50) {
+      if (team1Chance == 50) {
          if (random.nextBoolean()) {
-            t1Rounds++;
+            team1Rounds++;
             currentRoundWinner = 1;
+            currentRound++;
             team1FiftyFiftyWins++;
+            printRoundStats();
          } else {
-            t2Rounds++;
+            team2Rounds++;
             currentRoundWinner = 2;
+            currentRound++;
             team2FiftyFiftyWins++;
+            printRoundStats();
          }
-      } else if (t1HasBetterOdds) {
-         t1Rounds++;
+      } else if (team1HasBetterOdds) {
+         team1Rounds++;
          currentRoundWinner = 1;
+         printRoundStats();
+         currentRound++;
       } else {
-         t2Rounds++;
+         team2Rounds++;
          currentRoundWinner = 2;
-      }
+         printRoundStats();
+         currentRound++;
 
-      printRoundStats();
-      currentRound++;
+      }
    }
 
    public void simulateRoundFast() {
       setTeamStyles();
-      t1Chance = 50 + calculateTeam1Advantage();
-      t1HasBetterOdds = random.nextDouble() < (t1Chance / 100.0);
+      team1Chance = 50 + calculateTeam1Advantage();
+      team1HasBetterOdds = random.nextDouble() < (team1Chance / 100.0);
 
-      if (t1Chance == 50) {
+      if (team1Chance == 50) {
          if (random.nextBoolean()) {
-            t1Rounds++;
+            team1Rounds++;
             currentRoundWinner = 1;
             team1FiftyFiftyWins++;
          } else {
-            t2Rounds++;
+            team2Rounds++;
             currentRoundWinner = 2;
             team2FiftyFiftyWins++;
          }
-      } else if (t1HasBetterOdds) {
-         t1Rounds++;
+      } else if (team1HasBetterOdds) {
+         team1Rounds++;
          currentRoundWinner = 1;
       } else {
-         t2Rounds++;
+         team2Rounds++;
          currentRoundWinner = 2;
       }
 
@@ -193,21 +205,21 @@ public class MatchSimulator {
 
    // Round logic methods
    public void findAndSetRoundWinner() {
-      if (t1Chance == 50) {
+      if (team1Chance == 50) {
          if (random.nextBoolean()) {
-            t1Rounds++;
+            team1Rounds++;
             currentRoundWinner = 1;
             team1FiftyFiftyWins++;
          } else {
-            t2Rounds++;
+            team2Rounds++;
             currentRoundWinner = 2;
             team2FiftyFiftyWins++;
          }
-      } else if (t1HasBetterOdds) {
-         t1Rounds++;
+      } else if (team1HasBetterOdds) {
+         team1Rounds++;
          currentRoundWinner = 1;
       } else {
-         t2Rounds++;
+         team2Rounds++;
          currentRoundWinner = 2;
       }
    }
@@ -271,26 +283,29 @@ public class MatchSimulator {
       case "sunset" -> -1.39;
       default -> 0.0;
       };
+      if (cachedMapAdvantage == 0.0) {
+         map = "N/A";
+      }
       mapAdvantageCalculated = true;
    }
 
    // Game state check methods
    public boolean nobodyHas13Rounds() {
-      return t1Rounds < 13 && t2Rounds < 13;
+      return team1Rounds < 13 && team2Rounds < 13;
    }
 
    public boolean overtimeIsReached() {
-      return t1Rounds == 12 && t2Rounds == 12;
+      return team1Rounds == 12 && team2Rounds == 12;
    }
 
-   public boolean roundDeltaIsNot2() {
-      return Math.abs(t1Rounds - t2Rounds) != 2;
+   public boolean roundDeltaIsNoteam2() {
+      return Math.abs(team1Rounds - team2Rounds) != 2;
    }
 
    // Game state management methods
    public void resetMatch() {
-      t1Rounds = 0;
-      t2Rounds = 0;
+      team1Rounds = 0;
+      team2Rounds = 0;
       currentRound = 1;
       attackingTeam = 1;
    }
@@ -303,17 +318,25 @@ public class MatchSimulator {
       }
    }
 
-   public void incrementMatchWins() {
-      if (t1Rounds > t2Rounds) {
-         t1MatchWins++;
+   public void setAttackingTeam(int team) {
+      if (team != 1 || team != 2) {
+         attackingTeam = team;
       } else {
-         t2MatchWins++;
+         attackingTeam = 1;
+      }
+   }
+
+   public void incrementMatchWins() {
+      if (team1Rounds > team2Rounds) {
+         team1MatchWins++;
+      } else {
+         team2MatchWins++;
       }
    }
 
    public void addTotalRounds() {
-      t1TotalRounds += t1Rounds;
-      t2TotalRounds += t2Rounds;
+      team1TotalRounds += team1Rounds;
+      team2TotalRounds += team2Rounds;
    }
 
    // Display methods
@@ -322,11 +345,11 @@ public class MatchSimulator {
    }
 
    public void printRoundStats() {
-      double t1RoundedChance = Math.round(t1Chance * 100) / 100.0;
+      double team1RoundedChance = Math.round(team1Chance * 100) / 100.0;
       System.out.printf(
             "Current Round: %d%nAttackers: Team %d%nTeam 1's odds: %.2f%%%nTeam 2's odds: %.2f%%%nRound Winner: Team %d%nTeam 1 rounds: %d%nTeam 2 rounds: %d%nStyles: %s vs %s%n%n",
-            currentRound, attackingTeam, t1RoundedChance, 100 - t1RoundedChance, currentRoundWinner, t1Rounds, t2Rounds,
-            one.getStyle().toString(), two.getStyle().toString());
+            currentRound, attackingTeam, team1RoundedChance, 100 - team1RoundedChance, currentRoundWinner, team1Rounds,
+            team2Rounds, one.getStyle().toString(), two.getStyle().toString());
    }
 
    // Getter methods
@@ -335,18 +358,18 @@ public class MatchSimulator {
    }
 
    public int getMatchWinner() {
-      if (t1Rounds > t2Rounds) {
+      if (team1Rounds > team2Rounds) {
          return 1;
       }
       return 2;
    }
 
    public int getTeam1TotalRounds() {
-      return t1TotalRounds;
+      return team1TotalRounds;
    }
 
    public int getTeam2TotalRounds() {
-      return t2TotalRounds;
+      return team2TotalRounds;
    }
 
    public int getTeam1FiftyFiftyWins() {
@@ -358,19 +381,19 @@ public class MatchSimulator {
    }
 
    public int getTeam1MatchWins() {
-      return t1MatchWins;
+      return team1MatchWins;
    }
 
    public int getTeam2MatchWins() {
-      return t2MatchWins;
+      return team2MatchWins;
    }
 
    public int getCurrentTeam1Rounds() {
-      return t1Rounds;
+      return team1Rounds;
    }
 
    public int getCurrentTeam2Rounds() {
-      return t2Rounds;
+      return team2Rounds;
    }
 
    public int getCurrentRound() {

@@ -45,12 +45,7 @@ public class TeamComp {
    }
 
    public boolean canInputAgent(String in) {
-      for (Agent ag : AgentList.getList()) {
-         if (ag.getName().equalsIgnoreCase(in)) {
-            return true;
-         }
-      }
-      return false;
+      return AgentList.getAgentByName(in) != null;
    }
 
    public void setStyle() {
