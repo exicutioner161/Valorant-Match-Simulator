@@ -1,20 +1,34 @@
 package com.simulator;
 
+/**
+ * Represents an Agent in Valorant with their stylistic attributes and relative power in the current state of the game.
+ * Each agent has static attributes (name, role, aggro, control, midrange) and a dynamic attribute (relative power)
+ * that can be modified depending on the map and current meta.
+ *
+ * @author exicutioner161
+ * @version 0.1.4-alpha
+ * @see AgentList
+ */
+
 public class Agent {
    private final String name;
    private final String role;
-   private double relativePower;
-   private double aggr;
-   private double cont;
-   private double midr;
+   private final double baselineRelativePower;
+   private double currentRelativePower;
 
-   public Agent(String nam, String rol, double aggro, double control, double midrange, double relPower) {
-      name = nam;
-      role = rol;
+   private final double aggr;
+   private final double cont;
+   private final double midr;
+
+   public Agent(String name, String role, double aggro, double control, double midrange, double relPower) {
+      this.name = name;
+      this.role = role;
       aggr = aggro;
       cont = control;
       midr = midrange;
-      relativePower = relPower;
+      baselineRelativePower = relPower;
+      currentRelativePower = relPower;
+
    }
 
    public String getName() {
@@ -37,55 +51,25 @@ public class Agent {
       return midr;
    }
 
-   public double getRelativePower() {
-      return relativePower;
+   public double getCurrentRelativePower() {
+      return currentRelativePower;
    }
 
-   public void increaseRelativePower(double amount) {
-      if (amount > 0) {
-         relativePower += amount;
-      }
+   public void changeCurrentRelativePower(double amount) {
+      currentRelativePower += amount;
    }
 
-   public void increaseAggro(double amount) {
-      if (amount > 0) {
-         aggr += amount;
-      }
+   public void resetToBaselineRelativePower() {
+      currentRelativePower = baselineRelativePower;
    }
 
-   public void increaseControl(double amount) {
-      if (amount > 0) {
-         cont += amount;
-      }
-   }
-
-   public void increaseMidrange(double amount) {
-      if (amount > 0) {
-         midr += amount;
-      }
-   }
-
-   public void multiplyAggro(double factor) {
-      if (factor > 0) {
-         aggr *= factor;
-      }
-   }
-
-   public void multiplyControl(double factor) {
-      if (factor > 0) {
-         cont *= factor;
-      }
-   }
-
-   public void multiplyMidrange(double factor) {
-      if (factor > 0) {
-         midr *= factor;
-      }
+   private double roundToFourDecimals(double value) {
+      return Math.round(value * 10000.0) / 10000.0;
    }
 
    @Override
    public String toString() {
-      return name + ", " + (Math.round(aggr * 10000.0) / 10000.0) + "/" + (Math.round(cont * 10000.0) / 10000.0) + "/"
-            + (Math.round(midr * 10000.0) / 10000.0) + ", Relative Power: " + relativePower;
+      return name + ", " + roundToFourDecimals(aggr) + "/" + roundToFourDecimals(cont) + "/" + roundToFourDecimals(midr)
+            + ", Relative Power: " + currentRelativePower;
    }
 }

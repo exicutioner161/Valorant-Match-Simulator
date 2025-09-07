@@ -3,6 +3,36 @@ package com.simulator;
 import java.util.Random;
 import java.util.Scanner;
 
+/**
+ * Simulates matches in a Valorant match between two teams.
+ * This class handles game mechanics including round simulation, team composition,
+ * map advantages, and match statistics.
+ *
+ * The simulator takes into account:
+ * - Team compositions and their stylistic counters
+ * - Map-specific attacker/defender advantages
+ * - Team relative power levels
+ * - Round and match management
+ * - Score tracking and statistics
+ *
+ * A standard match consists of:
+ * - First to 13 rounds
+ * - Side swap after 12 rounds
+ * - Overtime rules when tied at 12-12
+ * - Teams need a 2-round lead to win in overtime
+ *
+ * Features:
+ * - Regular and fast simulation modes
+ * - Team agent input functionality
+ * - Map selection with corresponding advantages
+ * - Detailed round and match statistics
+ * - Probability-based round outcomes
+ *
+ * @author exicutioner161
+ * @version 0.1.4-alpha
+ * @see TeamComp
+ */
+
 public class MatchSimulator {
    private int currentRound;
    private int team1Rounds;
@@ -16,9 +46,9 @@ public class MatchSimulator {
    private int team1FiftyFiftyWins;
    private int team2FiftyFiftyWins;
    private double team1Chance;
-   private boolean team1HasBetterOdds;
    private double cachedMapAdvantage;
    private double cachedRelativePowerAdvantage;
+   private boolean team1HasBetterOdds;
    private boolean mapAdvantageCalculated;
    private boolean relativePowerAdvantageCalculated;
    private String map;
@@ -60,7 +90,7 @@ public class MatchSimulator {
       }
 
       if (overtimeIsReached()) {
-         while (roundDeltaIsNoteam2()) {
+         while (roundDeltaIsNot2()) {
             switchSides();
             simulateRound();
          }
@@ -86,7 +116,7 @@ public class MatchSimulator {
       }
 
       if (overtimeIsReached()) {
-         while (roundDeltaIsNoteam2()) {
+         while (roundDeltaIsNot2()) {
             switchSides();
             simulateRoundFast();
          }
@@ -298,7 +328,7 @@ public class MatchSimulator {
       return team1Rounds == 12 && team2Rounds == 12;
    }
 
-   public boolean roundDeltaIsNoteam2() {
+   public boolean roundDeltaIsNot2() {
       return Math.abs(team1Rounds - team2Rounds) != 2;
    }
 
@@ -319,10 +349,10 @@ public class MatchSimulator {
    }
 
    public void setAttackingTeam(int team) {
-      if (team != 1 || team != 2) {
-         attackingTeam = team;
-      } else {
+      if (team != 1 && team != 2) {
          attackingTeam = 1;
+      } else {
+         attackingTeam = team;
       }
    }
 
