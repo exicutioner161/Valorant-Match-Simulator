@@ -2,38 +2,40 @@ package com.simulator;
 
 import java.util.Random;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- * Simulates matches in a Valorant match between two teams.
- * This class handles game mechanics including round simulation, team composition,
- * map advantages, and match statistics.
+ * Simulates matches in a Valorant match between two teams. This class handles
+ * game mechanics including round simulation, team composition, map advantages,
+ * and match statistics.
  *
- * The simulator takes into account:
- * - Team compositions and their stylistic counters
- * - Map-specific attacker/defender advantages
- * - Team relative power levels
- * - Round and match management
- * - Score tracking and statistics
+ * The simulator takes into account: - Team compositions and their stylistic
+ * counters - Map-specific attacker/defender advantages - Team relative power
+ * levels - Round and match management - Score tracking and statistics
  *
- * A standard match consists of:
- * - First to 13 rounds
- * - Side swap after 12 rounds
- * - Overtime rules when tied at 12-12
- * - Teams need a 2-round lead to win in overtime
+ * A standard match consists of: - First to 13 rounds - Side swap after 12
+ * rounds - Overtime rules when tied at 12-12 - Teams need a 2-round lead to win
+ * in overtime
  *
- * Features:
- * - Regular and fast simulation modes
- * - Team agent input functionality
- * - Map selection with corresponding advantages
- * - Detailed round and match statistics
- * - Probability-based round outcomes
+ * Features: - Regular and fast simulation modes - Team agent input
+ * functionality - Map selection with corresponding advantages - Detailed round
+ * and match statistics - Probability-based round outcomes
  *
  * @author exicutioner161
- * @version 0.1.4-alpha
+ * @version 0.1.5-alpha
  * @see TeamComp
  */
 
 public class MatchSimulator {
+   private static final int ROUNDS_PER_HALF = 12;
+   private static final int ROUNDS_TO_WIN = 13;
+   private static final int TEAM_SIZE = 5;
+   private static final double BASE_CHANCE = 50.0;
+   private static final Logger logger = Logger.getLogger(MatchSimulator.class.getName());
+   private final Random random = new Random();
+   private final TeamComp one;
+   private final TeamComp two;
    private int currentRound;
    private int team1Rounds;
    private int team2Rounds;
@@ -52,10 +54,6 @@ public class MatchSimulator {
    private boolean mapAdvantageCalculated;
    private boolean relativePowerAdvantageCalculated;
    private String map;
-   private final Scanner input = new Scanner(System.in);
-   private final Random random = new Random();
-   private final TeamComp one;
-   private final TeamComp two;
 
    public MatchSimulator(TeamComp first, TeamComp second) {
       currentRound = 1;
@@ -79,7 +77,7 @@ public class MatchSimulator {
    public void simulateMatch() {
       setAttackerMapAdvantage();
 
-      for (int i = 0; i < 12; i++) {
+      for (int i = 0; i < ROUNDS_PER_HALF; i++) {
          simulateRound();
       }
 
@@ -105,7 +103,7 @@ public class MatchSimulator {
    public void simulateMatchFast() {
       setAttackerMapAdvantage();
 
-      for (int i = 0; i < 12; i++) {
+      for (int i = 0; i < ROUNDS_PER_HALF; i++) {
          simulateRoundFast();
       }
 
@@ -127,116 +125,67 @@ public class MatchSimulator {
       resetMatch();
    }
 
-   public void inputTeam1Agents() {
-      int validAgentsAdded = 0;
-
-      while (validAgentsAdded < 5) {
-         String in = input.nextLine();
-         if (in.equalsIgnoreCase("exit")) {
-            System.exit(0);
-         } else {
-            if (one.canInputAgent(in)) {
-               one.addAgent(in);
-               validAgentsAdded++;
-            } else {
-               System.out.println("Invalid agent name. Please try again.");
-            }
-         }
-      }
-   }
-
-   public void inputTeam2Agents() {
-      int validAgentsAdded = 0;
-
-      while (validAgentsAdded < 5) {
-         String in = input.nextLine();
-         if (in.equalsIgnoreCase("exit")) {
-            System.exit(0);
-         } else {
-            if (two.canInputAgent(in)) {
-               two.addAgent(in);
-               validAgentsAdded++;
-            } else {
-               System.out.println("Invalid agent name. Please try again.");
-            }
-         }
+   public void inputTeamAgents(Scanner input) {
+      try {
+         System.out.println("Enter your agents for Team 1:");
+         teamInputLoop(input, one);
+         System.out.println("Enter your agents for Team 2:");
+         teamInputLoop(input, two);
+      } catch (Exception e) {
+         logger.log(Level.SEVERE, "An error occurred while reading agent input", e);
       }
    }
 
    public void setMap(String mapOfMatch) {
+      if (mapOfMatch == null) {
+         throw new IllegalArgumentException("Invalid input. Map name cannot be null.");
+      }
       map = mapOfMatch.toLowerCase();
-      mapAdvantageCalculated = false; // Reset cache
+      mapAdvantageCalculated = false;
+   }
+
+   private void teamInputLoop(Scanner input, TeamComp team) {
+      int validAgentsAdded = 0;
+      while (validAgentsAdded < TEAM_SIZE) {
+         String agentName = input.nextLine();
+         if (agentName.equalsIgnoreCase("exit")) {
+            System.exit(0);
+         } else if (team.canInputAgent(agentName)) {
+            team.addAgent(agentName);
+            validAgentsAdded++;
+         } else {
+            System.out.println("Invalid agent name. Please try again.");
+         }
+      }
    }
 
    // Round simulation methods
-   public void simulateRound() {
+   private void simulateRoundCore() {
       setTeamStyles();
-      team1Chance = 50 + calculateTeam1Advantage();
+      team1Chance = BASE_CHANCE + calculateTeam1Advantage();
       team1HasBetterOdds = random.nextDouble() < (team1Chance / 100.0);
-
-      if (team1Chance == 50) {
-         if (random.nextBoolean()) {
-            team1Rounds++;
-            currentRoundWinner = 1;
-            currentRound++;
-            team1FiftyFiftyWins++;
-            printRoundStats();
-         } else {
-            team2Rounds++;
-            currentRoundWinner = 2;
-            currentRound++;
-            team2FiftyFiftyWins++;
-            printRoundStats();
-         }
-      } else if (team1HasBetterOdds) {
-         team1Rounds++;
-         currentRoundWinner = 1;
-         printRoundStats();
-         currentRound++;
-      } else {
-         team2Rounds++;
-         currentRoundWinner = 2;
-         printRoundStats();
-         currentRound++;
-
-      }
-   }
-
-   public void simulateRoundFast() {
-      setTeamStyles();
-      team1Chance = 50 + calculateTeam1Advantage();
-      team1HasBetterOdds = random.nextDouble() < (team1Chance / 100.0);
-
-      if (team1Chance == 50) {
-         if (random.nextBoolean()) {
-            team1Rounds++;
-            currentRoundWinner = 1;
-            team1FiftyFiftyWins++;
-         } else {
-            team2Rounds++;
-            currentRoundWinner = 2;
-            team2FiftyFiftyWins++;
-         }
-      } else if (team1HasBetterOdds) {
-         team1Rounds++;
-         currentRoundWinner = 1;
-      } else {
-         team2Rounds++;
-         currentRoundWinner = 2;
-      }
-
+      findAndSetRoundWinner();
       currentRound++;
    }
 
-   public void setTeamStyles() {
+   public void simulateRound() {
+      simulateRoundCore();
+      printRoundStats();
+   }
+
+   public void simulateRoundFast() {
+      simulateRoundCore();
+   }
+
+   private void setTeamStyles() {
       one.setStyle();
       two.setStyle();
    }
 
    // Round logic methods
-   public void findAndSetRoundWinner() {
-      if (team1Chance == 50) {
-         if (random.nextBoolean()) {
+   private void findAndSetRoundWinner() {
+      if (team1Chance == BASE_CHANCE) {
+         if (random.nextBoolean()) { // True 50/50 scenario
             team1Rounds++;
             currentRoundWinner = 1;
             team1FiftyFiftyWins++;
@@ -245,16 +194,16 @@ public class MatchSimulator {
             currentRoundWinner = 2;
             team2FiftyFiftyWins++;
          }
-      } else if (team1HasBetterOdds) {
+      } else if (team1HasBetterOdds) { // Team 1 has better odds
          team1Rounds++;
          currentRoundWinner = 1;
-      } else {
+      } else { // Team 2 has better odds
          team2Rounds++;
          currentRoundWinner = 2;
       }
    }
 
-   public double calculateTeam1Advantage() {
+   private double calculateTeam1Advantage() {
       double adv = random.nextDouble() * 4 + 1;
       setRelativePowerAdvantage();
 
@@ -266,7 +215,7 @@ public class MatchSimulator {
             return -adv + team1AttackerAdv;
          }
          return team1AttackerAdv;
-      } else { // Team 2 is attacking
+      } else if (attackingTeam == 2) { // Team 2 is attacking
          double team2AttackerAdv = cachedRelativePowerAdvantage - cachedMapAdvantage;
          if (one.canCounter(two)) {
             return adv + team2AttackerAdv;
@@ -275,9 +224,11 @@ public class MatchSimulator {
          }
          return team2AttackerAdv;
       }
+      logger.log(Level.SEVERE, "Invalid attacking team: {0}", attackingTeam);
+      return 0.0; // This should never be reached
    }
 
-   public void setRelativePowerAdvantage() {
+   private void setRelativePowerAdvantage() {
       cachedRelativePowerAdvantage = 0;
       int count = 0;
       double totalRelativePowerDelta = Math.abs(one.getTotalRelativePower() - two.getTotalRelativePower());
@@ -297,7 +248,7 @@ public class MatchSimulator {
       relativePowerAdvantageCalculated = true;
    }
 
-   public void setAttackerMapAdvantage() {
+   private void setAttackerMapAdvantage() {
       cachedMapAdvantage = switch (map) {
       case "abyss" -> -0.1;
       case "ascent" -> -5.05;
@@ -320,40 +271,24 @@ public class MatchSimulator {
    }
 
    // Game state check methods
-   public boolean nobodyHas13Rounds() {
-      return team1Rounds < 13 && team2Rounds < 13;
+   private boolean nobodyHas13Rounds() {
+      return team1Rounds < ROUNDS_TO_WIN && team2Rounds < ROUNDS_TO_WIN;
    }
 
-   public boolean overtimeIsReached() {
-      return team1Rounds == 12 && team2Rounds == 12;
+   private boolean overtimeIsReached() {
+      return team1Rounds == ROUNDS_PER_HALF && team2Rounds == ROUNDS_PER_HALF;
    }
 
-   public boolean roundDeltaIsNot2() {
+   private boolean roundDeltaIsNot2() {
       return Math.abs(team1Rounds - team2Rounds) != 2;
    }
 
    // Game state management methods
-   public void resetMatch() {
-      team1Rounds = 0;
-      team2Rounds = 0;
-      currentRound = 1;
-      attackingTeam = 1;
-   }
-
-   public void switchSides() {
-      if (attackingTeam == 1) {
-         attackingTeam = 2;
-      } else {
-         attackingTeam = 1;
-      }
-   }
-
    public void setAttackingTeam(int team) {
-      if (team != 1 && team != 2) {
-         attackingTeam = 1;
-      } else {
-         attackingTeam = team;
-      }
+      attackingTeam = switch (team) {
+      case 1, 2 -> team;
+      default -> throw new IllegalArgumentException("Team must be 1 or 2, got: " + team);
+      };
    }
 
    public void incrementMatchWins() {
@@ -367,6 +302,21 @@ public class MatchSimulator {
    public void addTotalRounds() {
       team1TotalRounds += team1Rounds;
       team2TotalRounds += team2Rounds;
+   }
+
+   private void resetMatch() {
+      team1Rounds = 0;
+      team2Rounds = 0;
+      currentRound = 1;
+      attackingTeam = 1;
+   }
+
+   private void switchSides() {
+      if (attackingTeam == 1) {
+         attackingTeam = 2;
+      } else {
+         attackingTeam = 1;
+      }
    }
 
    // Display methods

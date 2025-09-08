@@ -6,22 +6,20 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Main class for the Valorant Match Simulator application.
- * This class handles user input for match parameters and executes match simulations.
+ * Main class for the Valorant Match Simulator application. This class handles
+ * user input for match parameters and executes match simulations.
  *
- * The simulation process includes:
- * 1. Setting up teams and map selection
- * 2. Getting agent selections for both teams
- * 3. Determining attacking/defending sides
- * 4. Running specified number of match simulations
- * 5. Outputting detailed statistics
+ * The simulation process includes: 1. Setting up teams and map selection 2.
+ * Getting agent selections for both teams 3. Determining attacking/defending
+ * sides 4. Running specified number of match simulations 5. Outputting detailed
+ * statistics
  *
- * The program offers two simulation modes:
- * - Fast simulation: Simplified calculation without detailed output
- * - Regular simulation: Detailed calculation with round-by-round output
+ * The program offers two simulation modes: - Fast simulation: Simplified
+ * calculation without detailed output - Regular simulation: Detailed
+ * calculation with round-by-round output
  *
  * @author exicutioner161
- * @version 0.1.4-alpha
+ * @version 0.1.5-alpha
  * @see TeamComp
  * @see MatchSimulator
  */
@@ -50,11 +48,8 @@ public class Main {
          two.setMap(mapInput);
          match.setMap(mapInput);
 
-         System.out.println("Enter 5 agents for Team 1:");
-         match.inputTeam1Agents();
-
-         System.out.println("Enter 5 agents for Team 2:");
-         match.inputTeam2Agents();
+         System.out.println("Enter 5 agents per team.");
+         match.inputTeamAgents(input);
 
          System.out.println("Enter the attacking team (1 or 2):");
          if (input.hasNextInt()) {
@@ -62,7 +57,7 @@ public class Main {
          } else {
             System.out.println("Invalid input. Defaulting to Team 1.");
             match.setAttackingTeam(1);
-            input.nextLine(); // Consume invalid input
+            input.nextLine(); // Consume newline
          }
 
          System.out.println("Enter the number of matches to simulate:");
@@ -102,12 +97,12 @@ public class Main {
       System.out.println("------------------------------------------\nTeam 2 stats:");
       two.printStats();
 
-      System.out.println("Number of matches simulated: " + numberFormat.format(matches) + "\nMatch record: "
-            + numberFormat.format(match.getTeam1MatchWins()) + "-" + numberFormat.format(match.getTeam2MatchWins())
-            + "\nTotal rounds won by Team 1 vs Team 2: " + numberFormat.format(match.getTeam1TotalRounds()) + "-"
-            + numberFormat.format(match.getTeam2TotalRounds()) + "\n50/50 wins won by Team 1 vs Team 2: "
-            + numberFormat.format(match.getTeam1FiftyFiftyWins()) + "-"
-            + numberFormat.format(match.getTeam2FiftyFiftyWins()) + "\nMap: " + match.getMap().toUpperCase() + "\n");
+      System.out.printf(
+            "Number of matches simulated: %s%nTeam 1 match record vs Team 2: %s-%s%nTotal rounds won by Team 1 vs Team 2: %s-%s%n50/50 wins won by Team 1 vs Team 2: %s-%s%nMap: %s%n",
+            numberFormat.format(matches), numberFormat.format(match.getTeam1MatchWins()),
+            numberFormat.format(match.getTeam2MatchWins()), numberFormat.format(match.getTeam1TotalRounds()),
+            numberFormat.format(match.getTeam2TotalRounds()), numberFormat.format(match.getTeam1FiftyFiftyWins()),
+            numberFormat.format(match.getTeam2FiftyFiftyWins()), match.getMap().toUpperCase());
 
       // Calculate and log elapsed time
       double elapsed = (System.nanoTime() - start) / 1000000;

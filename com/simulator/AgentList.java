@@ -6,83 +6,72 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Represents a list of all agents in Valorant and manages their relative power levels based on different maps.
- * This class maintains a collection of all available agents and provides functionality to adjust their
- * relative power levels according to my understanding of the current state of the Valorant meta.
+ * Represents a list of all agents in Valorant and manages their relative power
+ * levels based on different maps. This class maintains a collection of all
+ * available agents and provides functionality to adjust their relative power
+ * levels according to my understanding of the current state of the Valorant
+ * meta.
  *
- * The class includes:
- * - A complete list of all Valorant agents with their base stats
- * - Map-specific power adjustments for each agent
- * - Methods to retrieve and manage agent information
+ * The class includes: - A complete list of all Valorant agents with their base
+ * stats - Map-specific power adjustments for each agent - Methods to retrieve
+ * and manage agent information
  *
- * Each agent is initialized with four primary attributes:
- * - Aggro
- * - Control
- * - Midrange
- * - Relative Power
+ * Each agent is initialized with four primary attributes: - Aggro - Control -
+ * Midrange - Relative Power
  *
- * The class supports the following maps:
- * - Abyss
- * - Ascent
- * - Bind
- * - Breeze
- * - Corrode
- * - Fracture
- * - Haven
- * - Icebox
- * - Lotus
- * - Pearl
- * - Split
- * - Sunset
+ * The class supports the following maps: - Abyss - Ascent - Bind - Breeze -
+ * Corrode - Fracture - Haven - Icebox - Lotus - Pearl - Split - Sunset
  *
- * Key features:
- * - Map-specific agent balancing
- * - Agent retrieval by name (case-insensitive)
- * - Immutable list view of agents
- * - Reset capability to baseline statistics
+ * Key features: - Map-specific agent balancing - Agent retrieval by name
+ * (case-insensitive) - Immutable list view of agents - Reset capability to
+ * baseline statistics
  *
  * @author exicutioner161
- * @version 0.1.4-alpha
+ * @version 0.1.5-alpha
  * @see Agent
  * @see TeamComp
  */
 
 public class AgentList {
 
-   private static final String CONTROLLER = "controller";
-   private static final String INITIATOR = "initiator";
-   private static final String SENTINEL = "sentinel";
-   private static final String DUELIST = "duelist";
+   private static final String CONTROLLER = "CONTROLLER";
+   private static final String INITIATOR = "INITIATOR";
+   private static final String SENTINEL = "SENTINEL";
+   private static final String DUELIST = "DUELIST";
+   private static final String AGGRO = "AGGRO";
+   private static final String CONTROL = "CONTROL";
+   private static final String MIDRANGE = "MIDRANGE";
+   private static final String NONE = "NONE";
 
    private final ArrayList<Agent> list = new ArrayList<>();
    private final Map<String, Agent> agentMap = new HashMap<>();
-   private final Agent astra = new Agent("Astra", CONTROLLER, 2, 3, 6, 8);
-   private final Agent breach = new Agent("Breach", INITIATOR, 7, 3, 1, 2);
-   private final Agent brimstone = new Agent("Brimstone", CONTROLLER, 7, 2, 2, 6);
-   private final Agent chamber = new Agent("Chamber", SENTINEL, 5, 6, 0, 7);
-   private final Agent clove = new Agent("Clove", CONTROLLER, 5, 1, 5, 5);
-   private final Agent cypher = new Agent("Cypher", SENTINEL, 1, 7, 3, 7);
-   private final Agent deadlock = new Agent("Deadlock", SENTINEL, 1, 5, 5, 7);
-   private final Agent fade = new Agent("Fade", INITIATOR, 3, 3, 5, 10);
-   private final Agent gekko = new Agent("Gekko", INITIATOR, 3, 1, 7, 7);
-   private final Agent harbor = new Agent("Harbor", CONTROLLER, 5, 3, 3, 3);
-   private final Agent iso = new Agent("Iso", DUELIST, 7, 1, 3, 6);
-   private final Agent jett = new Agent("Jett", DUELIST, 9, 2, 0, 7);
-   private final Agent kayo = new Agent("KAYO", INITIATOR, 7, 3, 1, 9);
-   private final Agent killjoy = new Agent("Killjoy", SENTINEL, 3, 7, 1, 7);
-   private final Agent neon = new Agent("Neon", DUELIST, 8, 0, 3, 10);
-   private final Agent omen = new Agent("Omen", CONTROLLER, 3, 6, 2, 10);
-   private final Agent phoenix = new Agent("Phoenix", DUELIST, 6, 2, 3, 4);
-   private final Agent raze = new Agent("Raze", DUELIST, 7, 1, 3, 9);
-   private final Agent reyna = new Agent("Reyna", DUELIST, 9, 0, 2, 4);
-   private final Agent sage = new Agent("Sage", SENTINEL, 1, 5, 5, 6);
-   private final Agent skye = new Agent("Skye", INITIATOR, 3, 2, 6, 5);
-   private final Agent sova = new Agent("Sova", INITIATOR, 1, 6, 4, 10);
-   private final Agent tejo = new Agent("Tejo", INITIATOR, 7, 1, 3, 7);
-   private final Agent viper = new Agent("Viper", CONTROLLER, 3, 5, 3, 10);
-   private final Agent vyse = new Agent("Vyse", SENTINEL, 1, 4, 6, 8);
-   private final Agent waylay = new Agent("Waylay", DUELIST, 8, 2, 1, 6);
-   private final Agent yoru = new Agent("Yoru", DUELIST, 5, 3, 3, 10);
+   private final Agent astra = new Agent("Astra", CONTROLLER, 2, 3, 6, 8, CONTROL);
+   private final Agent breach = new Agent("Breach", INITIATOR, 7, 3, 1, 2, AGGRO);
+   private final Agent brimstone = new Agent("Brimstone", CONTROLLER, 7, 2, 2, 6, NONE);
+   private final Agent chamber = new Agent("Chamber", SENTINEL, 5, 6, 0, 7, NONE);
+   private final Agent clove = new Agent("Clove", CONTROLLER, 5, 1, 5, 5, NONE);
+   private final Agent cypher = new Agent("Cypher", SENTINEL, 1, 7, 3, 7, CONTROL);
+   private final Agent deadlock = new Agent("Deadlock", SENTINEL, 1, 5, 5, 7, NONE);
+   private final Agent fade = new Agent("Fade", INITIATOR, 3, 3, 5, 10, MIDRANGE);
+   private final Agent gekko = new Agent("Gekko", INITIATOR, 3, 1, 7, 7, MIDRANGE);
+   private final Agent harbor = new Agent("Harbor", CONTROLLER, 5, 3, 3, 3, NONE);
+   private final Agent iso = new Agent("Iso", DUELIST, 7, 1, 3, 6, AGGRO);
+   private final Agent jett = new Agent("Jett", DUELIST, 9, 2, 0, 7, AGGRO);
+   private final Agent kayo = new Agent("KAYO", INITIATOR, 7, 3, 1, 9, NONE);
+   private final Agent killjoy = new Agent("Killjoy", SENTINEL, 3, 7, 1, 7, NONE);
+   private final Agent neon = new Agent("Neon", DUELIST, 8, 0, 3, 10, MIDRANGE);
+   private final Agent omen = new Agent("Omen", CONTROLLER, 3, 6, 2, 10, NONE);
+   private final Agent phoenix = new Agent("Phoenix", DUELIST, 6, 2, 3, 4, NONE);
+   private final Agent raze = new Agent("Raze", DUELIST, 7, 1, 3, 9, AGGRO);
+   private final Agent reyna = new Agent("Reyna", DUELIST, 9, 0, 2, 4, NONE);
+   private final Agent sage = new Agent("Sage", SENTINEL, 1, 5, 5, 6, NONE);
+   private final Agent skye = new Agent("Skye", INITIATOR, 3, 2, 6, 5, NONE);
+   private final Agent sova = new Agent("Sova", INITIATOR, 1, 6, 4, 10, NONE);
+   private final Agent tejo = new Agent("Tejo", INITIATOR, 7, 1, 3, 7, NONE);
+   private final Agent viper = new Agent("Viper", CONTROLLER, 3, 5, 3, 10, MIDRANGE);
+   private final Agent vyse = new Agent("Vyse", SENTINEL, 1, 4, 6, 8, CONTROL);
+   private final Agent waylay = new Agent("Waylay", DUELIST, 8, 2, 1, 6, NONE);
+   private final Agent yoru = new Agent("Yoru", DUELIST, 5, 3, 3, 10, AGGRO);
 
    public AgentList(String mapInput) {
       balanceAgentsByMapAndUpdateList(mapInput);
@@ -353,12 +342,12 @@ public class AgentList {
       brimstone.changeCurrentRelativePower(-2);
       chamber.changeCurrentRelativePower(1);
       clove.changeCurrentRelativePower(-1);
-      cypher.changeCurrentRelativePower(2);
+      cypher.changeCurrentRelativePower(3);
       fade.changeCurrentRelativePower(-1);
       gekko.changeCurrentRelativePower(-2);
-      iso.changeCurrentRelativePower(1);
+      iso.changeCurrentRelativePower(4);
       kayo.changeCurrentRelativePower(-2);
-      killjoy.changeCurrentRelativePower(1);
+      killjoy.changeCurrentRelativePower(2);
       neon.changeCurrentRelativePower(1);
       omen.changeCurrentRelativePower(3);
       phoenix.changeCurrentRelativePower(1);

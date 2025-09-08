@@ -1,34 +1,62 @@
 package com.simulator;
 
+import java.util.Objects;
+
 /**
- * Represents an Agent in Valorant with their stylistic attributes and relative power in the current state of the game.
- * Each agent has static attributes (name, role, aggro, control, midrange) and a dynamic attribute (relative power)
- * that can be modified depending on the map and current meta.
+ * Represents an Agent in Valorant with their stylistic attributes and relative
+ * power in the current state of the game. Each agent has static attributes
+ * (name, role, baseAggro, baseControl, baseMidrange) and a dynamic attribute
+ * (relative power) that can be modified depending on the map and current meta.
+ * Certain agents can also have splash attributes that provide minor boosts to
+ * specific styles. Splash attributes can be one of: AGGRO, CONTROL, MIDRANGE,
+ * or NONE. Splash attributes increase an agent's true style value of the
+ * corresponding style by 1 point. True style values are used in calculating
+ * advantages in matches, while base style values are displayed to the user.
  *
  * @author exicutioner161
- * @version 0.1.4-alpha
+ * @version 0.1.5-alpha
  * @see AgentList
  */
 
 public class Agent {
    private final String name;
    private final String role;
+   private final String splash;
    private final double baselineRelativePower;
+   private final double baseAggro;
+   private final double baseControl;
+   private final double baseMidrange;
+   private double trueAggro;
+   private double trueControl;
+   private double trueMidrange;
+   private boolean hasSplash;
    private double currentRelativePower;
 
-   private final double aggr;
-   private final double cont;
-   private final double midr;
+   public Agent(String name, String role, double aggro, double control, double midrange, double relativePower,
+         String splash) {
+      this.name = Objects.requireNonNull(name, "Invalid agent name. Name cannot be null.");
+      this.role = Objects.requireNonNull(role, "Invalid role for Agent: " + name + ". Role cannot be null.");
+      if (aggro < 0 || control < 0 || midrange < 0) {
+         throw new IllegalArgumentException("Invalid stats for Agent: " + name + ". stats cannot be negative.");
+      }
 
-   public Agent(String name, String role, double aggro, double control, double midrange, double relPower) {
-      this.name = name;
-      this.role = role;
-      aggr = aggro;
-      cont = control;
-      midr = midrange;
-      baselineRelativePower = relPower;
-      currentRelativePower = relPower;
+      baseAggro = aggro;
+      baseControl = control;
+      baseMidrange = midrange;
+      trueAggro = aggro;
+      trueControl = control;
+      trueMidrange = midrange;
+      baselineRelativePower = relativePower;
+      currentRelativePower = relativePower;
 
+      splash = splash.trim();
+      if (splash != null && (splash.equals("AGGRO") || splash.equals("CONTROL") || splash.equals("MIDRANGE"))) {
+         this.splash = splash;
+         hasSplash = true;
+      } else {
+         this.splash = "NONE";
+         hasSplash = false;
+      }
    }
 
    public String getName() {
@@ -39,20 +67,47 @@ public class Agent {
       return role;
    }
 
-   public double getAggro() {
-      return aggr;
+   public double getBaseAggro() {
+      return baseAggro;
    }
 
-   public double getControl() {
-      return cont;
+   public double getBaseControl() {
+      return baseControl;
    }
 
-   public double getMidrange() {
-      return midr;
+   public double getBaseMidrange() {
+      return baseMidrange;
+   }
+
+   public double getTrueAggro() {
+      return trueAggro;
+   }
+
+   public double getTrueControl() {
+      return trueControl;
+   }
+
+   public double getTrueMidrange() {
+      return trueMidrange;
    }
 
    public double getCurrentRelativePower() {
       return currentRelativePower;
+   }
+
+   public void applyStyleSplash() {
+      switch (splash) {
+      case "AGGRO" -> trueAggro = baseAggro + 2;
+      case "CONTROL" -> trueControl = baseControl + 2;
+      case "MIDRANGE" -> trueMidrange = baseMidrange + 3;
+      default -> {
+         // No splash to apply
+      }
+      }
+   }
+
+   public boolean hasSplash() {
+      return hasSplash;
    }
 
    public void changeCurrentRelativePower(double amount) {
@@ -68,8 +123,8 @@ public class Agent {
    }
 
    @Override
-   public String toString() {
-      return name + ", " + roundToFourDecimals(aggr) + "/" + roundToFourDecimals(cont) + "/" + roundToFourDecimals(midr)
-            + ", Relative Power: " + currentRelativePower;
+   public String toString() { // Return base stats for the agent
+      return name + ", " + roundToFourDecimals(baseAggro) + "/" + roundToFourDecimals(baseControl) + "/"
+            + roundToFourDecimals(baseMidrange) + ", Relative Power: " + currentRelativePower + ", Splash: " + splash;
    }
 }
