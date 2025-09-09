@@ -18,17 +18,18 @@ import java.util.logging.Logger;
  * without detailed output - Regular simulation: Detailed round-by-round stats
  *
  * @author exicutioner161
- * @version 0.1.6-alpha
+ * @version 0.1.7-alpha
  * @see TeamComp
  * @see MatchSimulator
- * @see TeamComp
  */
 
 public class Main {
+   private static final Logger logger = Logger.getLogger(Main.class.getName());
+
    public static void startupMessage() {
       String largeSeparator = "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
       System.out.println(largeSeparator);
-      System.out.println("Valorant Match Simulator v0.1.5-alpha");
+      System.out.println("Valorant Match Simulator v0.1.7-alpha");
       System.out.println("By exicutioner161\n");
    }
 
@@ -57,7 +58,7 @@ public class Main {
          } else {
             System.out.println("Invalid input. Please enter 1 or 2.");
          }
-         input.nextLine(); // Consume newline
+         input.nextLine(); // Consume invalid input
       }
       match.setAttackingTeam(team);
    }
@@ -67,11 +68,22 @@ public class Main {
       while (matches < 1) {
          System.out.println("Enter the number of matches to simulate (must be at least 1):");
          if (input.hasNextLong()) {
-            matches = input.nextLong();
+            if (input.nextLong() > Long.MAX_VALUE) {
+               System.out.println("Input exceeds maximum limit. Please enter a smaller positive integer.");
+               input.nextLine(); // Consume invalid input
+            } else if (input.nextLong() < 0) {
+               System.out.println("Input is negative. Please enter a positive integer.");
+               input.nextLine(); // Consume invalid input
+            } else if (input.nextLong() >= 1) {
+               matches = input.nextLong();
+               input.nextLine(); // Consume newline
+            }
          } else {
-            System.out.println("Invalid input. Please enter a positive integer.");
+            // This should never happen
+            logger.log(Level.SEVERE, "Severe error occured while reading input in returnNumberOfMatchesChoice: {0}",
+                  input.next());
+            input.nextLine(); // Consume invalid input
          }
-         input.nextLine(); // Consume newline
       }
       return matches;
    }
@@ -94,7 +106,6 @@ public class Main {
       MatchSimulator match = new MatchSimulator(teamOne, teamTwo);
       long matches = 1;
       boolean fastSimulation = true;
-      Logger logger = Logger.getLogger(Main.class.getName());
       NumberFormat numberFormat = NumberFormat.getInstance();
 
       // Startup message

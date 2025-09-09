@@ -14,7 +14,7 @@ import java.util.Objects;
  * advantages in matches, while base style values are displayed to the user.
  *
  * @author exicutioner161
- * @version 0.1.6-alpha
+ * @version 0.1.7-alpha
  * @see AgentList
  */
 

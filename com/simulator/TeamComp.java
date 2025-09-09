@@ -19,7 +19,7 @@ import java.util.logging.Logger;
  * beats control - control beats midrange - midrange beats aggro
  *
  * @author exicutioner161
- * @version 0.1.6-alpha
+ * @version 0.1.7-alpha
  * @see Agent
  * @see AgentList
  */
