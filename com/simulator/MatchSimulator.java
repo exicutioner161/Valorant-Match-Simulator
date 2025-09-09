@@ -12,7 +12,7 @@ import java.util.logging.Logger;
  *
  * The simulator takes into account: - Team compositions and their stylistic
  * counters - Map-specific attacker/defender advantages - Team relative power
- * levels - Round and match management - Score tracking and statistics
+ * levels - Randomness to simulate unpredictability
  *
  * A standard match consists of: - First to 13 rounds - Side swap after 12
  * rounds - Overtime rules when tied at 12-12 - Teams need a 2-round lead to win
@@ -23,7 +23,7 @@ import java.util.logging.Logger;
  * and match statistics - Probability-based round outcomes
  *
  * @author exicutioner161
- * @version 0.1.5-alpha
+ * @version 0.1.6-alpha
  * @see TeamComp
  */
 
@@ -31,11 +31,11 @@ public class MatchSimulator {
    private static final int ROUNDS_PER_HALF = 12;
    private static final int ROUNDS_TO_WIN = 13;
    private static final int TEAM_SIZE = 5;
-   private static final double BASE_CHANCE = 50.0;
+   private static final double FIFTY_FIFTY_CHANCE = 50.0;
    private static final Logger logger = Logger.getLogger(MatchSimulator.class.getName());
    private final Random random = new Random();
-   private final TeamComp one;
-   private final TeamComp two;
+   private final TeamComp teamOne;
+   private final TeamComp teamTwo;
    private int currentRound;
    private int team1Rounds;
    private int team2Rounds;
@@ -69,8 +69,8 @@ public class MatchSimulator {
       mapAdvantageCalculated = false;
       relativePowerAdvantageCalculated = false;
       map = "ascent";
-      one = first;
-      two = second;
+      teamOne = first;
+      teamTwo = second;
    }
 
    // Match simulation methods
@@ -128,9 +128,9 @@ public class MatchSimulator {
    public void inputTeamAgents(Scanner input) {
       try {
          System.out.println("Enter your agents for Team 1:");
-         teamInputLoop(input, one);
+         teamInputLoop(input, teamOne);
          System.out.println("Enter your agents for Team 2:");
-         teamInputLoop(input, two);
+         teamInputLoop(input, teamTwo);
       } catch (Exception e) {
          logger.log(Level.SEVERE, "An error occurred while reading agent input", e);
       }
@@ -162,29 +162,30 @@ public class MatchSimulator {
    // Round simulation methods
    private void simulateRoundCore() {
       setTeamStyles();
-      team1Chance = BASE_CHANCE + calculateTeam1Advantage();
+      team1Chance = FIFTY_FIFTY_CHANCE + calculateTeam1Advantage();
       team1HasBetterOdds = random.nextDouble() < (team1Chance / 100.0);
       findAndSetRoundWinner();
-      currentRound++;
    }
 
    public void simulateRound() {
       simulateRoundCore();
       printRoundStats();
+      currentRound++;
    }
 
    public void simulateRoundFast() {
       simulateRoundCore();
+      currentRound++;
    }
 
    private void setTeamStyles() {
-      one.setStyle();
-      two.setStyle();
+      teamOne.setStyle();
+      teamTwo.setStyle();
    }
 
    // Round logic methods
    private void findAndSetRoundWinner() {
-      if (team1Chance == BASE_CHANCE) {
+      if (team1Chance == FIFTY_FIFTY_CHANCE) {
          if (random.nextBoolean()) { // True 50/50 scenario
             team1Rounds++;
             currentRoundWinner = 1;
@@ -209,17 +210,17 @@ public class MatchSimulator {
 
       if (attackingTeam == 1) { // Team 1 is attacking
          double team1AttackerAdv = cachedRelativePowerAdvantage + cachedMapAdvantage;
-         if (one.canCounter(two)) {
+         if (teamOne.canCounter(teamTwo)) {
             return adv + team1AttackerAdv;
-         } else if (two.canCounter(one)) {
+         } else if (teamTwo.canCounter(teamOne)) {
             return -adv + team1AttackerAdv;
          }
          return team1AttackerAdv;
       } else if (attackingTeam == 2) { // Team 2 is attacking
          double team2AttackerAdv = cachedRelativePowerAdvantage - cachedMapAdvantage;
-         if (one.canCounter(two)) {
+         if (teamOne.canCounter(teamTwo)) {
             return adv + team2AttackerAdv;
-         } else if (two.canCounter(one)) {
+         } else if (teamTwo.canCounter(teamOne)) {
             return -adv + team2AttackerAdv;
          }
          return team2AttackerAdv;
@@ -231,15 +232,15 @@ public class MatchSimulator {
    private void setRelativePowerAdvantage() {
       cachedRelativePowerAdvantage = 0;
       int count = 0;
-      double totalRelativePowerDelta = Math.abs(one.getTotalRelativePower() - two.getTotalRelativePower());
+      double totalRelativePowerDelta = Math.abs(teamOne.getTotalRelativePower() - teamTwo.getTotalRelativePower());
 
       // Team 1 has more relative power
-      if (one.getTotalRelativePower() > two.getTotalRelativePower()) {
+      if (teamOne.getTotalRelativePower() > teamTwo.getTotalRelativePower()) {
          while (count < totalRelativePowerDelta) {
             cachedRelativePowerAdvantage += 0.2;
             count++;
          }
-      } else if (one.getTotalRelativePower() < two.getTotalRelativePower()) { // Team 2 has more relative power
+      } else if (teamOne.getTotalRelativePower() < teamTwo.getTotalRelativePower()) { // Team 2 has more relative power
          while (count < totalRelativePowerDelta) {
             cachedRelativePowerAdvantage -= 0.2;
             count++;
@@ -329,7 +330,7 @@ public class MatchSimulator {
       System.out.printf(
             "Current Round: %d%nAttackers: Team %d%nTeam 1's odds: %.2f%%%nTeam 2's odds: %.2f%%%nRound Winner: Team %d%nTeam 1 rounds: %d%nTeam 2 rounds: %d%nStyles: %s vs %s%n%n",
             currentRound, attackingTeam, team1RoundedChance, 100 - team1RoundedChance, currentRoundWinner, team1Rounds,
-            team2Rounds, one.getStyle().toString(), two.getStyle().toString());
+            team2Rounds, teamOne.getStyle().toString(), teamTwo.getStyle().toString());
    }
 
    // Getter methods

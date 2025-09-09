@@ -27,9 +27,8 @@ import java.util.Map;
  * baseline statistics
  *
  * @author exicutioner161
- * @version 0.1.5-alpha
+ * @version 0.1.6-alpha
  * @see Agent
- * @see TeamComp
  */
 
 public class AgentList {
@@ -117,7 +116,7 @@ public class AgentList {
       }
    }
 
-   public void resetAgentsToBaseline() {
+   private void resetAgentsToBaseline() {
       for (Agent agent : list) {
          agent.resetToBaselineRelativePower();
       }
@@ -519,9 +518,10 @@ public class AgentList {
    }
 
    // Getter methods
-   // Returns an unmodifiable view of the agent list.
-   // Modifications to the returned list will result in an
-   // UnsupportedOperationException.
+   /*
+    * Returns an unmodifiable view of the agent list. Modifications to the returned
+    * list will result in an UnsupportedOperationException.
+    */
    public List<Agent> getList() {
       return java.util.Collections.unmodifiableList(list);
    }
