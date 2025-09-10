@@ -12,22 +12,39 @@ import java.util.Map;
  * levels according to my understanding of the current state of the Valorant
  * meta.
  *
- * The class includes: - A complete list of all Valorant agents with their base
- * stats - Map-specific power adjustments for each agent - Methods to retrieve
- * and manage agent information
+ * The class includes:
+ * - A complete list of all Valorant agents with their base stats
+ * - Map-specific power adjustments for each agent
+ * - Methods to retrieve and manage agent information
  *
- * Each agent is initialized with four primary attributes: - Aggro - Control -
- * Midrange - Relative Power
+ * Each agent is initialized with four primary attributes:
+ * - Aggro
+ * - Control
+ * - Midrange
+ * - Relative Power
  *
- * The class supports the following maps: - Abyss - Ascent - Bind - Breeze -
- * Corrode - Fracture - Haven - Icebox - Lotus - Pearl - Split - Sunset
+ * The class supports the following maps:
+ * - Abyss
+ * - Ascent
+ * - Bind
+ * - Breeze
+ * - Corrode
+ * - Fracture
+ * - Haven
+ * - Icebox
+ * - Lotus
+ * - Pearl
+ * - Split
+ * - Sunset
  *
- * Key features: - Map-specific agent balancing - Agent retrieval by name
- * (case-insensitive) - Immutable list view of agents - Reset capability to
- * baseline statistics
+ * Key features:
+ * - Map-specific agent balancing
+ * - Agent retrieval by name (case-insensitive)
+ * - Immutable list view of agents
+ * - Reset capability to baseline statistics
  *
  * @author exicutioner161
- * @version 0.1.7-alpha
+ * @version 0.1.8-alpha
  * @see Agent
  */
 
@@ -44,33 +61,87 @@ public class AgentList {
 
    private final ArrayList<Agent> list = new ArrayList<>();
    private final Map<String, Agent> agentMap = new HashMap<>();
-   private final Agent astra = new Agent("Astra", CONTROLLER, 2, 3, 6, 8, CONTROL);
-   private final Agent breach = new Agent("Breach", INITIATOR, 7, 3, 1, 2, AGGRO);
-   private final Agent brimstone = new Agent("Brimstone", CONTROLLER, 7, 2, 2, 6, NONE);
-   private final Agent chamber = new Agent("Chamber", SENTINEL, 5, 6, 0, 7, NONE);
-   private final Agent clove = new Agent("Clove", CONTROLLER, 5, 1, 5, 5, NONE);
-   private final Agent cypher = new Agent("Cypher", SENTINEL, 1, 7, 3, 7, CONTROL);
-   private final Agent deadlock = new Agent("Deadlock", SENTINEL, 1, 5, 5, 7, NONE);
-   private final Agent fade = new Agent("Fade", INITIATOR, 3, 3, 5, 10, MIDRANGE);
-   private final Agent gekko = new Agent("Gekko", INITIATOR, 3, 1, 7, 7, MIDRANGE);
-   private final Agent harbor = new Agent("Harbor", CONTROLLER, 5, 3, 3, 3, NONE);
-   private final Agent iso = new Agent("Iso", DUELIST, 7, 1, 3, 6, AGGRO);
-   private final Agent jett = new Agent("Jett", DUELIST, 9, 2, 0, 7, AGGRO);
-   private final Agent kayo = new Agent("KAYO", INITIATOR, 7, 3, 1, 9, NONE);
-   private final Agent killjoy = new Agent("Killjoy", SENTINEL, 3, 7, 1, 7, NONE);
-   private final Agent neon = new Agent("Neon", DUELIST, 8, 0, 3, 10, MIDRANGE);
-   private final Agent omen = new Agent("Omen", CONTROLLER, 3, 6, 2, 10, NONE);
-   private final Agent phoenix = new Agent("Phoenix", DUELIST, 6, 2, 3, 4, NONE);
-   private final Agent raze = new Agent("Raze", DUELIST, 7, 1, 3, 9, AGGRO);
-   private final Agent reyna = new Agent("Reyna", DUELIST, 9, 0, 2, 4, NONE);
-   private final Agent sage = new Agent("Sage", SENTINEL, 1, 5, 5, 6, NONE);
-   private final Agent skye = new Agent("Skye", INITIATOR, 3, 2, 6, 5, NONE);
-   private final Agent sova = new Agent("Sova", INITIATOR, 1, 6, 4, 10, NONE);
-   private final Agent tejo = new Agent("Tejo", INITIATOR, 7, 1, 3, 7, NONE);
-   private final Agent viper = new Agent("Viper", CONTROLLER, 3, 5, 3, 10, MIDRANGE);
-   private final Agent vyse = new Agent("Vyse", SENTINEL, 1, 4, 6, 8, CONTROL);
-   private final Agent waylay = new Agent("Waylay", DUELIST, 8, 2, 1, 6, NONE);
-   private final Agent yoru = new Agent("Yoru", DUELIST, 5, 3, 3, 10, AGGRO);
+
+   private final Agent astra = new Agent("Astra", CONTROLLER, 2, 3, 6,
+         8, CONTROL);
+
+   private final Agent breach = new Agent("Breach", INITIATOR, 7, 3, 1,
+         2, AGGRO);
+
+   private final Agent brimstone = new Agent("Brimstone", CONTROLLER, 7, 2, 2,
+         6, NONE);
+
+   private final Agent chamber = new Agent("Chamber", SENTINEL, 5, 6, 0,
+         7, NONE);
+
+   private final Agent clove = new Agent("Clove", CONTROLLER, 5, 1, 5,
+         5, NONE);
+
+   private final Agent cypher = new Agent("Cypher", SENTINEL, 1, 7, 3,
+         7, CONTROL);
+
+   private final Agent deadlock = new Agent("Deadlock", SENTINEL, 1, 5, 5,
+         7, NONE);
+
+   private final Agent fade = new Agent("Fade", INITIATOR, 3, 3, 5,
+         10, MIDRANGE);
+
+   private final Agent gekko = new Agent("Gekko", INITIATOR, 3, 1, 7,
+         7, MIDRANGE);
+
+   private final Agent harbor = new Agent("Harbor", CONTROLLER, 5, 3, 3,
+         3, NONE);
+
+   private final Agent iso = new Agent("Iso", DUELIST, 7, 1, 3,
+         6, AGGRO);
+
+   private final Agent jett = new Agent("Jett", DUELIST, 9, 2, 0,
+         7, AGGRO);
+
+   private final Agent kayo = new Agent("KAYO", INITIATOR, 7, 3, 1,
+         9, NONE);
+
+   private final Agent killjoy = new Agent("Killjoy", SENTINEL, 3, 7, 1,
+         7, NONE);
+
+   private final Agent neon = new Agent("Neon", DUELIST, 8, 0, 3,
+         10, MIDRANGE);
+
+   private final Agent omen = new Agent("Omen", CONTROLLER, 3, 6, 2,
+         10, NONE);
+
+   private final Agent phoenix = new Agent("Phoenix", DUELIST, 6, 2, 3,
+         4, NONE);
+
+   private final Agent raze = new Agent("Raze", DUELIST, 7, 1, 3,
+         9, AGGRO);
+
+   private final Agent reyna = new Agent("Reyna", DUELIST, 9, 0, 2,
+         4, NONE);
+
+   private final Agent sage = new Agent("Sage", SENTINEL, 1, 5, 5,
+         6, NONE);
+
+   private final Agent skye = new Agent("Skye", INITIATOR, 3, 2, 6,
+         5, NONE);
+
+   private final Agent sova = new Agent("Sova", INITIATOR, 1, 6, 4,
+         10, NONE);
+
+   private final Agent tejo = new Agent("Tejo", INITIATOR, 7, 1, 3,
+         7, NONE);
+
+   private final Agent viper = new Agent("Viper", CONTROLLER, 3, 5, 3,
+         10, MIDRANGE);
+
+   private final Agent vyse = new Agent("Vyse", SENTINEL, 1, 4, 6,
+         8, CONTROL);
+
+   private final Agent waylay = new Agent("Waylay", DUELIST, 8, 2, 1,
+         6, NONE);
+
+   private final Agent yoru = new Agent("Yoru", DUELIST, 5, 3, 3,
+         10, AGGRO);
 
    public AgentList(String mapInput) {
       balanceAgentsByMapAndUpdateList(mapInput);
@@ -125,21 +196,21 @@ public class AgentList {
    public final void balanceAgentsByMapAndUpdateList(String map) {
       resetAgentsToBaseline();
       switch (map.trim().toLowerCase()) {
-      case "abyss" -> abyssBalance();
-      case "ascent" -> ascentBalance();
-      case "bind" -> bindBalance();
-      case "breeze" -> breezeBalance();
-      case "corrode" -> corrodeBalance();
-      case "fracture" -> fractureBalance();
-      case "haven" -> havenBalance();
-      case "icebox" -> iceboxBalance();
-      case "lotus" -> lotusBalance();
-      case "pearl" -> pearlBalance();
-      case "split" -> splitBalance();
-      case "sunset" -> sunsetBalance();
-      default -> {
-         // Keep agent stats at baseline for invalid map inputs
-      }
+         case "abyss" -> abyssBalance();
+         case "ascent" -> ascentBalance();
+         case "bind" -> bindBalance();
+         case "breeze" -> breezeBalance();
+         case "corrode" -> corrodeBalance();
+         case "fracture" -> fractureBalance();
+         case "haven" -> havenBalance();
+         case "icebox" -> iceboxBalance();
+         case "lotus" -> lotusBalance();
+         case "pearl" -> pearlBalance();
+         case "split" -> splitBalance();
+         case "sunset" -> sunsetBalance();
+         default -> {
+            // Keep agent stats at baseline for invalid map inputs
+         }
       }
       addAgentsToStorage();
    }
@@ -337,7 +408,7 @@ public class AgentList {
       // No change for Harbor
       // No change for Jett
       astra.changeCurrentRelativePower(2);
-      breach.changeCurrentRelativePower(2);
+      breach.changeCurrentRelativePower(4);
       brimstone.changeCurrentRelativePower(-2);
       chamber.changeCurrentRelativePower(1);
       clove.changeCurrentRelativePower(-1);

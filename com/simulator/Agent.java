@@ -3,18 +3,21 @@ package com.simulator;
 import java.util.Objects;
 
 /**
- * Represents an Agent in Valorant with their stylistic attributes and relative
- * power in the current state of the game. Each agent has static attributes
- * (name, role, baseAggro, baseControl, baseMidrange) and a dynamic attribute
- * (relative power) that can be modified depending on the map and current meta.
- * Certain agents can also have splash attributes that provide minor boosts to
- * specific styles. Splash attributes can be one of: AGGRO, CONTROL, MIDRANGE,
- * or NONE. Splash attributes increase an agent's true style value of the
- * corresponding style by 1 point. True style values are used in calculating
- * advantages in matches, while base style values are displayed to the user.
+ * This class represents an Agent in Valorant with their stylistic attributes
+ * and relative power in the current state of the game.
+ * Features:
+ * - Static attributes (name, role, baseAggro, baseControl, baseMidrange)
+ * - A dynamic attribute (relative power) that can be modified
+ * depending on the map and current meta.
+ * - Splash attributes for certain agents that provide minor boosts to specific
+ * styles. They can be one of: AGGRO, CONTROL, MIDRANGE, or NONE. They increase
+ * an agent's true style value of the corresponding style by 1 point.
+ * - True style values that are used in calculating advantages in matches
+ * - Base style values are displayed to the user.
+ * - Thread-safe implementation using synchronized methods for mutable state.
  *
  * @author exicutioner161
- * @version 0.1.7-alpha
+ * @version 0.1.8-alpha
  * @see AgentList
  */
 
@@ -26,11 +29,11 @@ public class Agent {
    private final double baseAggro;
    private final double baseControl;
    private final double baseMidrange;
-   private double trueAggro;
-   private double trueControl;
-   private double trueMidrange;
-   private boolean hasSplash;
-   private double currentRelativePower;
+   private volatile double trueAggro;
+   private volatile double trueControl;
+   private volatile double trueMidrange;
+   private final boolean hasSplash;
+   private volatile double currentRelativePower;
 
    public Agent(String name, String role, double aggro, double control, double midrange, double relativePower,
          String splash) {
@@ -95,14 +98,14 @@ public class Agent {
       return currentRelativePower;
    }
 
-   public void applyStyleSplash() {
+   public synchronized void applyStyleSplash() {
       switch (splash) {
-      case "AGGRO" -> trueAggro = baseAggro + 2;
-      case "CONTROL" -> trueControl = baseControl + 2;
-      case "MIDRANGE" -> trueMidrange = baseMidrange + 3;
-      default -> {
-         // No splash to apply
-      }
+         case "AGGRO" -> trueAggro = baseAggro + 2;
+         case "CONTROL" -> trueControl = baseControl + 2;
+         case "MIDRANGE" -> trueMidrange = baseMidrange + 3;
+         default -> {
+            // No splash to apply
+         }
       }
    }
 
@@ -110,11 +113,11 @@ public class Agent {
       return hasSplash;
    }
 
-   public void changeCurrentRelativePower(double amount) {
+   public synchronized void changeCurrentRelativePower(double amount) {
       currentRelativePower += amount;
    }
 
-   public void resetToBaselineRelativePower() {
+   public synchronized void resetToBaselineRelativePower() {
       currentRelativePower = baselineRelativePower;
    }
 

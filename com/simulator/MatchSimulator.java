@@ -1,52 +1,56 @@
 package com.simulator;
 
-import java.util.Random;
 import java.util.Scanner;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * Simulates matches in a Valorant match between two teams. This class handles
- * game mechanics including round simulation, team composition, map advantages,
- * and match statistics.
+ * game mechanics including round simulation, team composition creation, map
+ * advantages, and match statistics.
  *
- * The simulator takes into account: - Team compositions and their stylistic
- * counters - Map-specific attacker/defender advantages - Team relative power
- * levels - Randomness to simulate unpredictability
+ * The simulator takes into account:
+ * - Team compositions and their stylistic counters
+ * - Map-specific attacker/defender advantages
+ * - Team relative power levels
+ * - Randomness to simulate unpredictability
  *
- * A standard match consists of: - First to 13 rounds - Side swap after 12
- * rounds - Overtime rules when tied at 12-12 - Teams need a 2-round lead to win
- * in overtime
+ * A standard match consists of:
+ * - First to 13 rounds
+ * - Side swap after 12 rounds
+ * - Overtime rules when tied at 12-12
+ * - Teams need a 2-round lead to win in overtime
  *
- * Features: - Regular and fast simulation modes - Team agent input
- * functionality - Map selection with corresponding advantages - Detailed round
- * and match statistics - Probability-based round outcomes
+ * Features:
+ * - Regular and fast simulation modes
+ * - Team agent input functionality
+ * - Map selection with corresponding advantages
+ * - Detailed round and match statistics
+ * - Probability-based round outcomes
  *
  * @author exicutioner161
- * @version 0.1.7-alpha
+ * @version 0.1.8-alpha
  * @see TeamComp
  */
 
 public class MatchSimulator {
-   private static final int ROUNDS_PER_HALF = 12;
-   private static final int ROUNDS_TO_WIN = 13;
-   private static final int TEAM_SIZE = 5;
+   private static final byte ROUNDS_PER_HALF = 12;
+   private static final byte ROUNDS_TO_WIN = 13;
+   private static final byte TEAM_SIZE = 5;
    private static final double FIFTY_FIFTY_CHANCE = 50.0;
    private static final Logger logger = Logger.getLogger(MatchSimulator.class.getName());
-   private final Random random = new Random();
-   private final TeamComp teamOne;
-   private final TeamComp teamTwo;
-   private int currentRound;
-   private int team1Rounds;
-   private int team2Rounds;
-   private int attackingTeam;
-   private int team1MatchWins;
-   private int team2MatchWins;
-   private int team1TotalRounds;
-   private int team2TotalRounds;
-   private int currentRoundWinner;
-   private int team1FiftyFiftyWins;
-   private int team2FiftyFiftyWins;
+   private static long team1MatchWins = 0;
+   private static long team2MatchWins = 0;
+   private static long team1TotalRounds = 0;
+   private static long team2TotalRounds = 0;
+   private static long team1FiftyFiftyWins = 0;
+   private static long team2FiftyFiftyWins = 0;
+   private short currentRound;
+   private short team1Rounds;
+   private short team2Rounds;
+   private short attackingTeam;
+   private short currentRoundWinner;
    private double team1Chance;
    private double cachedMapAdvantage;
    private double cachedRelativePowerAdvantage;
@@ -54,18 +58,14 @@ public class MatchSimulator {
    private boolean mapAdvantageCalculated;
    private boolean relativePowerAdvantageCalculated;
    private String map;
+   private final TeamComp teamOne;
+   private final TeamComp teamTwo;
 
    public MatchSimulator(TeamComp first, TeamComp second) {
       currentRound = 1;
       team1Rounds = 0;
       team2Rounds = 0;
-      team1MatchWins = 0;
-      team2MatchWins = 0;
-      team1TotalRounds = 0;
-      team2TotalRounds = 0;
       attackingTeam = 1;
-      team1FiftyFiftyWins = 0;
-      team2FiftyFiftyWins = 0;
       mapAdvantageCalculated = false;
       relativePowerAdvantageCalculated = false;
       map = "ascent";
@@ -138,7 +138,7 @@ public class MatchSimulator {
 
    public void setMap(String mapOfMatch) {
       if (mapOfMatch == null) {
-         throw new IllegalArgumentException("Invalid input. Map name cannot be null.");
+         throw new IllegalArgumentException("Invalid input in setMap. Map name cannot be null.");
       }
       map = mapOfMatch.toLowerCase();
       mapAdvantageCalculated = false;
@@ -160,21 +160,20 @@ public class MatchSimulator {
    }
 
    // Round simulation methods
-   private void simulateRoundCore() {
+   private void simulateRound() {
       setTeamStyles();
       team1Chance = FIFTY_FIFTY_CHANCE + calculateTeam1Advantage();
-      team1HasBetterOdds = random.nextDouble() < (team1Chance / 100.0);
+      team1HasBetterOdds = ThreadLocalRandom.current().nextDouble() < (team1Chance / 100.0);
       findAndSetRoundWinner();
-   }
-
-   public void simulateRound() {
-      simulateRoundCore();
       printRoundStats();
       currentRound++;
    }
 
-   public void simulateRoundFast() {
-      simulateRoundCore();
+   private void simulateRoundFast() {
+      setTeamStyles();
+      team1Chance = FIFTY_FIFTY_CHANCE + calculateTeam1Advantage();
+      team1HasBetterOdds = ThreadLocalRandom.current().nextDouble() < (team1Chance / 100.0);
+      findAndSetRoundWinner();
       currentRound++;
    }
 
@@ -186,7 +185,7 @@ public class MatchSimulator {
    // Round logic methods
    private void findAndSetRoundWinner() {
       if (team1Chance == FIFTY_FIFTY_CHANCE) {
-         if (random.nextBoolean()) { // True 50/50 scenario
+         if (ThreadLocalRandom.current().nextBoolean()) { // True 50/50 scenario
             team1Rounds++;
             currentRoundWinner = 1;
             team1FiftyFiftyWins++;
@@ -205,28 +204,30 @@ public class MatchSimulator {
    }
 
    private double calculateTeam1Advantage() {
-      double adv = random.nextDouble() * 4 + 1;
+      double advantage = ThreadLocalRandom.current().nextDouble() * 4 + 1;
       setRelativePowerAdvantage();
 
       if (attackingTeam == 1) { // Team 1 is attacking
-         double team1AttackerAdv = cachedRelativePowerAdvantage + cachedMapAdvantage;
+         double team1AttackerAdvantage = cachedRelativePowerAdvantage + cachedMapAdvantage;
          if (teamOne.canCounter(teamTwo)) {
-            return adv + team1AttackerAdv;
+            return team1AttackerAdvantage + advantage;
          } else if (teamTwo.canCounter(teamOne)) {
-            return -adv + team1AttackerAdv;
+            return team1AttackerAdvantage - advantage;
          }
-         return team1AttackerAdv;
+         return team1AttackerAdvantage;
       } else if (attackingTeam == 2) { // Team 2 is attacking
-         double team2AttackerAdv = cachedRelativePowerAdvantage - cachedMapAdvantage;
+         double team2AttackerAdvantage = cachedRelativePowerAdvantage - cachedMapAdvantage;
          if (teamOne.canCounter(teamTwo)) {
-            return adv + team2AttackerAdv;
+            return team2AttackerAdvantage + advantage;
          } else if (teamTwo.canCounter(teamOne)) {
-            return -adv + team2AttackerAdv;
+            return team2AttackerAdvantage - advantage;
          }
-         return team2AttackerAdv;
+         return team2AttackerAdvantage;
       }
-      logger.log(Level.SEVERE, "Invalid attacking team: {0}", attackingTeam);
-      return 0.0; // This should never be reached
+
+      // This should never be reached
+      logger.log(Level.SEVERE, "Invalid attacking team in calculateTeam1Advantage: {0}", attackingTeam);
+      return 0.0f;
    }
 
    private void setRelativePowerAdvantage() {
@@ -251,21 +252,21 @@ public class MatchSimulator {
 
    private void setAttackerMapAdvantage() {
       cachedMapAdvantage = switch (map) {
-      case "abyss" -> -0.1;
-      case "ascent" -> -5.05;
-      case "bind" -> -3.81;
-      case "breeze" -> 1.11;
-      case "corrode" -> -0.96;
-      case "fracture" -> 1;
-      case "haven" -> -1.68;
-      case "icebox" -> -1.35;
-      case "lotus" -> 0.57;
-      case "pearl" -> -1.6;
-      case "split" -> -3.3;
-      case "sunset" -> -1.39;
-      default -> 0.0;
+         case "abyss" -> -0.1f;
+         case "ascent" -> -5.05f;
+         case "bind" -> -3.81f;
+         case "breeze" -> 1.11f;
+         case "corrode" -> -0.96f;
+         case "fracture" -> 1f;
+         case "haven" -> -1.68f;
+         case "icebox" -> -1.35f;
+         case "lotus" -> 0.57f;
+         case "pearl" -> -1.6f;
+         case "split" -> -3.3f;
+         case "sunset" -> -1.39f;
+         default -> 0.0f;
       };
-      if (cachedMapAdvantage == 0.0) {
+      if (cachedMapAdvantage == 0.0f) {
          map = "N/A";
       }
       mapAdvantageCalculated = true;
@@ -285,10 +286,10 @@ public class MatchSimulator {
    }
 
    // Game state management methods
-   public void setAttackingTeam(int team) {
+   public void setAttackingTeam(short team) {
       attackingTeam = switch (team) {
-      case 1, 2 -> team;
-      default -> throw new IllegalArgumentException("Team must be 1 or 2, got: " + team);
+         case 1, 2 -> team;
+         default -> throw new IllegalArgumentException("Team must be 1 or 2, got: " + team);
       };
    }
 
@@ -320,6 +321,15 @@ public class MatchSimulator {
       }
    }
 
+   public void resetStats() {
+      team1MatchWins = 0;
+      team2MatchWins = 0;
+      team1TotalRounds = 0;
+      team2TotalRounds = 0;
+      team1FiftyFiftyWins = 0;
+      team2FiftyFiftyWins = 0;
+   }
+
    // Display methods
    public void printMatchWinner() {
       System.out.printf("Winner of the match: Team %d%n%n", getMatchWinner());
@@ -345,43 +355,43 @@ public class MatchSimulator {
       return 2;
    }
 
-   public int getTeam1TotalRounds() {
+   public long getTeam1TotalRounds() {
       return team1TotalRounds;
    }
 
-   public int getTeam2TotalRounds() {
+   public long getTeam2TotalRounds() {
       return team2TotalRounds;
    }
 
-   public int getTeam1FiftyFiftyWins() {
+   public long getTeam1FiftyFiftyWins() {
       return team1FiftyFiftyWins;
    }
 
-   public int getTeam2FiftyFiftyWins() {
+   public long getTeam2FiftyFiftyWins() {
       return team2FiftyFiftyWins;
    }
 
-   public int getTeam1MatchWins() {
+   public long getTeam1MatchWins() {
       return team1MatchWins;
    }
 
-   public int getTeam2MatchWins() {
+   public long getTeam2MatchWins() {
       return team2MatchWins;
    }
 
-   public int getCurrentTeam1Rounds() {
+   public long getCurrentTeam1Rounds() {
       return team1Rounds;
    }
 
-   public int getCurrentTeam2Rounds() {
+   public long getCurrentTeam2Rounds() {
       return team2Rounds;
    }
 
-   public int getCurrentRound() {
+   public long getCurrentRound() {
       return currentRound;
    }
 
-   public int getAttackingTeam() {
+   public long getAttackingTeam() {
       return attackingTeam;
    }
 

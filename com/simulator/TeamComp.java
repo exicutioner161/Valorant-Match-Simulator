@@ -2,7 +2,7 @@ package com.simulator;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 
 /**
@@ -15,11 +15,13 @@ import java.util.logging.Logger;
  * total stylistic scores. The team's playstyle is determined based on the
  * distribution of these stylistic attributes.
  *
- * Team styles follow a rock-paper-scissors triangular relationship: - aggro
- * beats control - control beats midrange - midrange beats aggro
+ * Team styles follow a rock-paper-scissors triangular relationship:
+ * - aggro beats control
+ * - control beats midrange
+ * - midrange beats aggro
  *
  * @author exicutioner161
- * @version 0.1.7-alpha
+ * @version 0.1.8-alpha
  * @see Agent
  * @see AgentList
  */
@@ -33,13 +35,12 @@ public class TeamComp {
    private double trueMidrange;
    private double maxTotalTruePoints;
    private double totalRelativePower;
-   private int numAgents;
+   private byte numAgents;
    private Style style;
    private final AgentList agentList;
    private final ArrayList<Agent> teamComposition;
-   private final Random random = new Random();
    private static final Logger LOGGER = Logger.getLogger(TeamComp.class.getName());
-   private static final int TEAM_SIZE = 5;
+   private static final byte TEAM_SIZE = 5;
 
    public enum Style {
       AGGR, CONTR, MIDR
@@ -102,7 +103,7 @@ public class TeamComp {
    }
 
    public void setStyle() {
-      double styleRoll = random.nextDouble() * maxTotalTruePoints;
+      double styleRoll = ThreadLocalRandom.current().nextDouble() * maxTotalTruePoints;
       calculateStyle(styleRoll);
    }
 
