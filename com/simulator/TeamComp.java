@@ -21,7 +21,7 @@ import java.util.logging.Logger;
  * - midrange beats aggro
  *
  * @author exicutioner161
- * @version 0.1.8-alpha
+ * @version 0.1.9-alpha
  * @see Agent
  * @see AgentList
  */

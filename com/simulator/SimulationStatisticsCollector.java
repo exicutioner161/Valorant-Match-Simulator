@@ -16,52 +16,70 @@
  *   Round wins for both teams
  *   Fifty-fifty situation wins for both teams
  *
- * Note: This implementation creates temporary MatchSimulator
- * instances with empty TeamComp objects purely for accessing static data.
- * Consider refactoring MatchSimulator to expose static getter methods directly
- * to eliminate this overhead.
- *
  * @author exicutioner161
- * @version 0.1.8-alpha
+ * @version 0.1.9-alpha
  * @see MatchSimulator
  * @see Main
  */
 package com.simulator;
 
 public class SimulationStatisticsCollector {
+	private static long team1MatchWins;
+	private static long team2MatchWins;
+	private static long team1RoundWins;
+	private static long team2RoundWins;
+	private static long team1FiftyFiftyWins;
+	private static long team2FiftyFiftyWins;
 
 	private SimulationStatisticsCollector() {
 		// Private constructor to prevent instantiation
 	}
 
+	public static void incrementTeam1MatchWins() {
+		team1MatchWins++;
+	}
+
+	public static void incrementTeam2MatchWins() {
+		team2MatchWins++;
+	}
+
+	public static void increaseTeam1RoundWins(long rounds) {
+		team1RoundWins += rounds;
+	}
+
+	public static void increaseTeam2RoundWins(long rounds) {
+		team2RoundWins += rounds;
+	}
+
+	public static void incrementTeam1FiftyFiftyWins() {
+		team1FiftyFiftyWins++;
+	}
+
+	public static void incrementTeam2FiftyFiftyWins() {
+		team2FiftyFiftyWins++;
+	}
+
 	public static long getTeam1MatchWins() {
-		// Create a temporary instance to access the static getter methods
-		MatchSimulator temp = new MatchSimulator(new TeamComp(), new TeamComp());
-		return temp.getTeam1MatchWins();
+		return team1MatchWins;
 	}
 
 	public static long getTeam2MatchWins() {
-		MatchSimulator temp = new MatchSimulator(new TeamComp(), new TeamComp());
-		return temp.getTeam2MatchWins();
+		return team2MatchWins;
 	}
 
 	public static long getTeam1RoundWins() {
-		MatchSimulator temp = new MatchSimulator(new TeamComp(), new TeamComp());
-		return temp.getTeam1TotalRounds();
+		return team1RoundWins;
 	}
 
 	public static long getTeam2RoundWins() {
-		MatchSimulator temp = new MatchSimulator(new TeamComp(), new TeamComp());
-		return temp.getTeam2TotalRounds();
+		return team2RoundWins;
 	}
 
 	public static long getTeam1FiftyFiftyWins() {
-		MatchSimulator temp = new MatchSimulator(new TeamComp(), new TeamComp());
-		return temp.getTeam1FiftyFiftyWins();
+		return team1FiftyFiftyWins;
 	}
 
 	public static long getTeam2FiftyFiftyWins() {
-		MatchSimulator temp = new MatchSimulator(new TeamComp(), new TeamComp());
-		return temp.getTeam2FiftyFiftyWins();
+		return team2FiftyFiftyWins;
 	}
 }

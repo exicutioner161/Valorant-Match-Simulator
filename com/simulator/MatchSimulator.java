@@ -30,7 +30,7 @@ import java.util.logging.Logger;
  * - Probability-based round outcomes
  *
  * @author exicutioner161
- * @version 0.1.8-alpha
+ * @version 0.1.9-alpha
  * @see TeamComp
  */
 
@@ -40,12 +40,6 @@ public class MatchSimulator {
    private static final byte TEAM_SIZE = 5;
    private static final double FIFTY_FIFTY_CHANCE = 50.0;
    private static final Logger logger = Logger.getLogger(MatchSimulator.class.getName());
-   private static long team1MatchWins = 0;
-   private static long team2MatchWins = 0;
-   private static long team1TotalRounds = 0;
-   private static long team2TotalRounds = 0;
-   private static long team1FiftyFiftyWins = 0;
-   private static long team2FiftyFiftyWins = 0;
    private short currentRound;
    private short team1Rounds;
    private short team2Rounds;
@@ -188,11 +182,11 @@ public class MatchSimulator {
          if (ThreadLocalRandom.current().nextBoolean()) { // True 50/50 scenario
             team1Rounds++;
             currentRoundWinner = 1;
-            team1FiftyFiftyWins++;
+            SimulationStatisticsCollector.incrementTeam1FiftyFiftyWins();
          } else {
             team2Rounds++;
             currentRoundWinner = 2;
-            team2FiftyFiftyWins++;
+            SimulationStatisticsCollector.incrementTeam2FiftyFiftyWins();
          }
       } else if (team1HasBetterOdds) { // Team 1 has better odds
          team1Rounds++;
@@ -204,69 +198,61 @@ public class MatchSimulator {
    }
 
    private double calculateTeam1Advantage() {
-      double advantage = ThreadLocalRandom.current().nextDouble() * 4 + 1;
-      setRelativePowerAdvantage();
-
+      double stylisticAdvantage = ThreadLocalRandom.current().nextDouble() * 4 + 1;
+      boolean team1CanCounter = teamOne.canCounter(teamTwo);
+      boolean team2CanCounter = teamTwo.canCounter(teamOne);
       if (attackingTeam == 1) { // Team 1 is attacking
-         double team1AttackerAdvantage = cachedRelativePowerAdvantage + cachedMapAdvantage;
-         if (teamOne.canCounter(teamTwo)) {
-            return team1AttackerAdvantage + advantage;
-         } else if (teamTwo.canCounter(teamOne)) {
-            return team1AttackerAdvantage - advantage;
+         double attackingAdvantage = getRelativePowerAdvantage() + cachedMapAdvantage;
+         if (team1CanCounter && !team2CanCounter) {
+            return attackingAdvantage + stylisticAdvantage;
+         } else if (!team1CanCounter && team2CanCounter) {
+            return attackingAdvantage - stylisticAdvantage;
          }
-         return team1AttackerAdvantage;
+         return attackingAdvantage;
       } else if (attackingTeam == 2) { // Team 2 is attacking
-         double team2AttackerAdvantage = cachedRelativePowerAdvantage - cachedMapAdvantage;
-         if (teamOne.canCounter(teamTwo)) {
-            return team2AttackerAdvantage + advantage;
-         } else if (teamTwo.canCounter(teamOne)) {
-            return team2AttackerAdvantage - advantage;
+         double attackingAdvantage = getRelativePowerAdvantage() - cachedMapAdvantage;
+         if (!team1CanCounter && team2CanCounter) {
+            return attackingAdvantage + stylisticAdvantage;
+         } else if (team1CanCounter && !team2CanCounter) {
+            return attackingAdvantage - stylisticAdvantage;
          }
-         return team2AttackerAdvantage;
+         return attackingAdvantage;
       }
 
       // This should never be reached
       logger.log(Level.SEVERE, "Invalid attacking team in calculateTeam1Advantage: {0}", attackingTeam);
-      return 0.0f;
+      return 0.0;
    }
 
    private void setRelativePowerAdvantage() {
       cachedRelativePowerAdvantage = 0;
-      int count = 0;
       double totalRelativePowerDelta = Math.abs(teamOne.getTotalRelativePower() - teamTwo.getTotalRelativePower());
-
-      // Team 1 has more relative power
-      if (teamOne.getTotalRelativePower() > teamTwo.getTotalRelativePower()) {
-         while (count < totalRelativePowerDelta) {
-            cachedRelativePowerAdvantage += 0.2;
-            count++;
-         }
-      } else if (teamOne.getTotalRelativePower() < teamTwo.getTotalRelativePower()) { // Team 2 has more relative power
-         while (count < totalRelativePowerDelta) {
-            cachedRelativePowerAdvantage -= 0.2;
-            count++;
-         }
+      for (int i = 0; i < totalRelativePowerDelta; i++) {
+         cachedRelativePowerAdvantage += 0.2;
+      }
+      if (teamTwo.getTotalRelativePower() > teamOne.getTotalRelativePower()) { // Team 2 has more relative power
+         cachedRelativePowerAdvantage = -cachedRelativePowerAdvantage;
       }
       relativePowerAdvantageCalculated = true;
    }
 
    private void setAttackerMapAdvantage() {
       cachedMapAdvantage = switch (map) {
-         case "abyss" -> -0.1f;
-         case "ascent" -> -5.05f;
-         case "bind" -> -3.81f;
-         case "breeze" -> 1.11f;
-         case "corrode" -> -0.96f;
-         case "fracture" -> 1f;
-         case "haven" -> -1.68f;
-         case "icebox" -> -1.35f;
-         case "lotus" -> 0.57f;
-         case "pearl" -> -1.6f;
-         case "split" -> -3.3f;
-         case "sunset" -> -1.39f;
-         default -> 0.0f;
+         case "abyss" -> -0.1;
+         case "ascent" -> -5.05;
+         case "bind" -> -3.81;
+         case "breeze" -> 1.11;
+         case "corrode" -> -0.96;
+         case "fracture" -> 1;
+         case "haven" -> -1.68;
+         case "icebox" -> -1.35;
+         case "lotus" -> 0.57;
+         case "pearl" -> -1.6;
+         case "split" -> -3.3;
+         case "sunset" -> -1.39;
+         default -> 0.0;
       };
-      if (cachedMapAdvantage == 0.0f) {
+      if (cachedMapAdvantage == 0.0) {
          map = "N/A";
       }
       mapAdvantageCalculated = true;
@@ -295,15 +281,15 @@ public class MatchSimulator {
 
    public void incrementMatchWins() {
       if (team1Rounds > team2Rounds) {
-         team1MatchWins++;
+         SimulationStatisticsCollector.incrementTeam1MatchWins();
       } else {
-         team2MatchWins++;
+         SimulationStatisticsCollector.incrementTeam2MatchWins();
       }
    }
 
    public void addTotalRounds() {
-      team1TotalRounds += team1Rounds;
-      team2TotalRounds += team2Rounds;
+      SimulationStatisticsCollector.increaseTeam1RoundWins(team1Rounds);
+      SimulationStatisticsCollector.increaseTeam2RoundWins(team2Rounds);
    }
 
    private void resetMatch() {
@@ -319,15 +305,6 @@ public class MatchSimulator {
       } else {
          attackingTeam = 1;
       }
-   }
-
-   public void resetStats() {
-      team1MatchWins = 0;
-      team2MatchWins = 0;
-      team1TotalRounds = 0;
-      team2TotalRounds = 0;
-      team1FiftyFiftyWins = 0;
-      team2FiftyFiftyWins = 0;
    }
 
    // Display methods
@@ -353,30 +330,6 @@ public class MatchSimulator {
          return 1;
       }
       return 2;
-   }
-
-   public long getTeam1TotalRounds() {
-      return team1TotalRounds;
-   }
-
-   public long getTeam2TotalRounds() {
-      return team2TotalRounds;
-   }
-
-   public long getTeam1FiftyFiftyWins() {
-      return team1FiftyFiftyWins;
-   }
-
-   public long getTeam2FiftyFiftyWins() {
-      return team2FiftyFiftyWins;
-   }
-
-   public long getTeam1MatchWins() {
-      return team1MatchWins;
-   }
-
-   public long getTeam2MatchWins() {
-      return team2MatchWins;
    }
 
    public long getCurrentTeam1Rounds() {

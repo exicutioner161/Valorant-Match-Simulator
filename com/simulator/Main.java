@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 /**
  * Entry point for the Valorant Match Simulator application.
  *
- * This class orchestrates the entire simulation process by:
+ * This class goes through the simulation process by:
  * 1. Displaying the startup message
  * 2. Setting up simulation parameters (map, agents, attacking team, number of
  * matches, simulation mode)
@@ -27,7 +27,7 @@ import java.util.logging.Logger;
  * statistics.
  *
  * @author exicutioner161
- * @version 0.1.8-alpha
+ * @version 0.1.9-alpha
  * @see TeamComp
  * @see MatchSimulator
  */
@@ -47,7 +47,7 @@ public class Main {
    public static void startupMessage() {
       String largeSeparator = "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
       System.out.println(largeSeparator);
-      System.out.println("Valorant Match Simulator v0.1.8-alpha");
+      System.out.println("Valorant Match Simulator v0.1.9-alpha");
       System.out.println("By exicutioner161\n");
    }
 
@@ -61,13 +61,29 @@ public class Main {
    public static void chooseMap(Scanner input, TeamComp one, TeamComp two, MatchSimulator match) {
       System.out.println(
             """
-                  Enter a map name. This will be used for map advantage calculations.
-                  Available maps: Abyss, Ascent, Bind, Breeze, Corrode, Fracture, Haven, Icebox, Lotus, Pearl, Split, Sunset, or N/A.""");
-      String mapInput = input.nextLine().trim();
-      exitIfRequested(mapInput);
-      one.setMap(mapInput);
-      two.setMap(mapInput);
-      match.setMap(mapInput);
+                        Enter a map name. This will be used for map advantage calculations.
+                        Available maps: Abyss, Ascent, Bind, Breeze, Corrode, Fracture, Haven, Icebox, Lotus, Pearl, Split, Sunset, or NONE.
+                  """);
+      String mapInput = "";
+      while (!isValidMap(mapInput)) {
+         System.out.println("Please enter a valid map name or NONE:");
+         mapInput = input.nextLine().trim();
+         exitIfRequested(mapInput);
+         one.setMap(mapInput);
+         two.setMap(mapInput);
+         match.setMap(mapInput);
+      }
+   }
+
+   private static boolean isValidMap(String mapInput) {
+      String[] validMaps = { "ABYSS", "ASCENT", "BIND", "BREEZE", "CORRODE", "FRACTURE", "HAVEN", "ICEBOX", "LOTUS",
+            "PEARL", "SPLIT", "SUNSET", "NONE" };
+      for (String map : validMaps) {
+         if (map.equalsIgnoreCase(mapInput)) {
+            return true;
+         }
+      }
+      return false;
    }
 
    public static void inputAgents(Scanner input, MatchSimulator match) {
@@ -239,7 +255,7 @@ public class Main {
 
       // Start measuring elapsed time
       startLoggingElapsedTime();
-      match.resetStats();
+
       // Adjust numThreads if necessary before calculating work distribution
       adjustNumThreadsIfNecessary();
 

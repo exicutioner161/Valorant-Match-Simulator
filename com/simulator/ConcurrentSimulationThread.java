@@ -6,7 +6,7 @@ package com.simulator;
  * statistics that are aggregated after completion.
  *
  * @author exicutioner161
- * @version 0.1.8-alpha
+ * @version 0.1.9-alpha
  * @see TeamComp
  * @see MatchSimulator
  */

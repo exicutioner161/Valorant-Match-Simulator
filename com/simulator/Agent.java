@@ -17,7 +17,7 @@ import java.util.Objects;
  * - Thread-safe implementation using synchronized methods for mutable state.
  *
  * @author exicutioner161
- * @version 0.1.8-alpha
+ * @version 0.1.9-alpha
  * @see AgentList
  */
 
@@ -29,10 +29,11 @@ public class Agent {
    private final double baseAggro;
    private final double baseControl;
    private final double baseMidrange;
+   private final boolean hasSplash;
    private volatile double trueAggro;
    private volatile double trueControl;
    private volatile double trueMidrange;
-   private final boolean hasSplash;
+
    private volatile double currentRelativePower;
 
    public Agent(String name, String role, double aggro, double control, double midrange, double relativePower,
