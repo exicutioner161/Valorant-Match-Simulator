@@ -54,7 +54,7 @@ public class Main {
    public static void startupMessage() {
       String largeSeparator = "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
       System.out.println(largeSeparator);
-      System.out.println("Valorant Match Simulator v0.1.9-alpha");
+      System.out.println("Valorant Match Simulator v0.2.0-alpha");
       System.out.println("By exicutioner161\n");
    }
 
