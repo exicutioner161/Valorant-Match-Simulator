@@ -11,15 +11,15 @@ import java.util.logging.Logger;
  * Entry point for the Valorant Match Simulator application.
  *
  * This class goes through the simulation process by:
- * 1. Displaying the startup message
+ * 1. Displaying the startup message.
  * 2. Setting up simulation parameters (map, agents, attacking team, number of
- * matches, simulation mode)
+ * matches, simulation mode).
  * 3. Creating and managing multiple concurrent simulation threads for optimal
- * performance
- * 4. Collecting and aggregating results from all threads
+ * performance.
+ * 4. Collecting and aggregating results from all threads.
  * 5. Displaying comprehensive statistics including team stats, match records,
- * round wins, and performance metrics
- * 6. Logging execution time for performance analysis
+ * round wins, and performance metrics.
+ * 6. Logging execution time for performance analysis.
  *
  * The method uses multi-threading to maximize simulation throughput,
  * distributing the workload evenly across available CPU cores. Results are
@@ -27,7 +27,7 @@ import java.util.logging.Logger;
  * statistics.
  *
  * @author exicutioner161
- * @version 0.1.9-alpha
+ * @version 0.2.0-alpha
  * @see TeamComp
  * @see MatchSimulator
  */
@@ -39,11 +39,18 @@ public class Main {
    private static final TeamComp teamTwo = new TeamComp();
    private static final MatchSimulator match = new MatchSimulator(teamOne, teamTwo);
    private static final List<ConcurrentSimulationThread> startedThreads = new ArrayList<>();
-   private static short numThreads = ConcurrentSimulationThread.getOptimalThreadCount();
+   private static short numThreads = (short) (ConcurrentSimulationThread.getOptimalThreadCount() * 0.8);
    private static long matches = 0;
    private static long startMilliseconds = 0;
    private static boolean fastSimulation = true;
 
+   /**
+    * Displays the application startup message and version information.
+    *
+    * Clears the console with multiple newlines and shows the application title,
+    * version number, and author information. This creates a clean, professional
+    * appearance when the application starts.
+    */
    public static void startupMessage() {
       String largeSeparator = "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
       System.out.println(largeSeparator);
@@ -51,6 +58,15 @@ public class Main {
       System.out.println("By exicutioner161\n");
    }
 
+   /**
+    * Checks if the user has requested to exit the application.
+    *
+    * Monitors for exit commands ("exit" case-insensitive or "-1") and
+    * immediately terminates the application with a goodbye message.
+    * This provides a consistent way to exit from any input prompt.
+    *
+    * @param str The input string to check for exit commands
+    */
    public static void exitIfRequested(String str) {
       if (str.equalsIgnoreCase("exit") || str.equals("-1")) {
          System.out.println("Exiting simulation setup.");
@@ -58,6 +74,19 @@ public class Main {
       }
    }
 
+   /**
+    * Prompts the user to select a map for the match simulation.
+    *
+    * This method displays available Valorant maps and allows the user to select
+    * one for map advantage calculations. The selected map is set for both team
+    * compositions and the match simulator. If "NONE" is selected, no map
+    * advantage will be applied.
+    *
+    * @param input the Scanner for user input
+    * @param one   the first team composition
+    * @param two   the second team composition
+    * @param match the match simulator to configure
+    */
    public static void chooseMap(Scanner input, TeamComp one, TeamComp two, MatchSimulator match) {
       System.out.println(
             """
@@ -75,6 +104,12 @@ public class Main {
       }
    }
 
+   /**
+    * Validates whether the input string is a recognized Valorant map name.
+    *
+    * @param mapInput the user input to validate (case-insensitive)
+    * @return true if the input matches a valid map name or "NONE", false otherwise
+    */
    private static boolean isValidMap(String mapInput) {
       String[] validMaps = { "ABYSS", "ASCENT", "BIND", "BREEZE", "CORRODE", "FRACTURE", "HAVEN", "ICEBOX", "LOTUS",
             "PEARL", "SPLIT", "SUNSET", "NONE" };
@@ -86,11 +121,30 @@ public class Main {
       return false;
    }
 
+   /**
+    * Prompts the user to input agent selections for both teams.
+    *
+    * This method delegates the agent input process to the MatchSimulator,
+    * which handles the collection of 5 agents per team.
+    *
+    * @param input the Scanner for user input
+    * @param match the match simulator to configure with agent selections
+    */
    public static void inputAgents(Scanner input, MatchSimulator match) {
       System.out.println("Enter 5 agents per team.");
       match.inputTeamAgents(input);
    }
 
+   /**
+    * Prompts the user to select which team starts as attackers.
+    *
+    * This method validates user input to ensure only team 1 or 2 can be selected
+    * as the initial attacking team. The selection is then applied to the match
+    * simulator configuration.
+    *
+    * @param input the Scanner for user input
+    * @param match the match simulator to configure with the attacking team
+    */
    public static void chooseAttackingTeam(Scanner input, MatchSimulator match) {
       short team = 0;
       System.out.println("Enter the attacking team (1 or 2):");
@@ -107,6 +161,15 @@ public class Main {
       match.setAttackingTeam(team);
    }
 
+   /**
+    * Prompts the user to specify the number of matches to simulate.
+    *
+    * This method validates that the input is a positive integer (at least 1)
+    * and continues prompting until valid input is provided.
+    *
+    * @param input the Scanner for user input
+    * @return the number of matches to simulate (guaranteed to be >= 1)
+    */
    public static long returnNumberOfMatchesChoice(Scanner input) {
       long numMatches = 0;
       System.out.println("Enter the number of matches to simulate (must be at least 1):");
@@ -123,6 +186,15 @@ public class Main {
       return numMatches;
    }
 
+   /**
+    * Prompts the user to choose between fast or detailed simulation mode.
+    *
+    * Fast simulation skips detailed round-by-round output for better performance
+    * when running large numbers of matches.
+    *
+    * @param input the Scanner for user input
+    * @return true if fast simulation is requested, false for detailed simulation
+    */
    public static boolean returnFastSimulationChoice(Scanner input) {
       System.out.println("Do you want to run a fast simulation? (Y/N):");
       String in;
@@ -139,6 +211,24 @@ public class Main {
       }
    }
 
+   /**
+    * Orchestrates the complete setup of simulation parameters through user
+    * interaction.
+    *
+    * This method guides the user through all necessary configuration steps:
+    * - Map selection for advantage calculations
+    * - Agent selection for both teams
+    * - Attacking team designation
+    * - Number of matches to simulate
+    * - Simulation mode (fast or detailed)
+    *
+    * All user input is validated and the configuration is applied to the
+    * provided team compositions and match simulator.
+    *
+    * @param teamOne the first team composition to configure
+    * @param teamTwo the second team composition to configure
+    * @param match   the match simulator to configure
+    */
    public static void setUpSimulationParameters(TeamComp teamOne, TeamComp teamTwo, MatchSimulator match) {
       System.out.println("Input simulation parameters. Type 'exit' to quit.");
       try (Scanner input = new Scanner(System.in)) {
@@ -162,12 +252,30 @@ public class Main {
       }
    }
 
+   /**
+    * Adjusts the number of threads to not exceed the number of matches.
+    *
+    * This prevents creating more threads than matches to simulate, which
+    * would result in idle threads and wasted resources.
+    */
    public static void adjustNumThreadsIfNecessary() {
       if (numThreads > matches) {
          numThreads = (short) matches;
       }
    }
 
+   /**
+    * Calculates the number of simulations assigned to a specific thread.
+    *
+    * Distributes the total matches evenly across threads, with remainder
+    * matches distributed to the first few threads to ensure all matches
+    * are simulated exactly once.
+    *
+    * @param threadIndex          the index of the thread
+    * @param simulationsPerThread the base number of simulations per thread
+    * @param remainderSimulations the number of extra simulations to distribute
+    * @return the total number of simulations for this specific thread
+    */
    public static long getSimulationsForThread(int threadIndex, long simulationsPerThread, long remainderSimulations) {
       if (threadIndex < remainderSimulations) {
          return simulationsPerThread + 1;
@@ -176,6 +284,14 @@ public class Main {
       }
    }
 
+   /**
+    * Validates that at least one thread is available for simulation.
+    *
+    * If no threads are available, logs a severe error and terminates
+    * the application since simulation cannot proceed.
+    *
+    * @param numThreads the number of available threads
+    */
    public static void checkAvailableThreads(int numThreads) {
       if (numThreads < 1) {
          logger.log(Level.SEVERE, "No threads available! Number of threads available: {0}", numThreads);
@@ -183,6 +299,15 @@ public class Main {
       }
    }
 
+   /**
+    * Creates a new simulation thread if the thread has simulations assigned.
+    *
+    * This method only creates a thread if it has at least one simulation
+    * to run, preventing the creation of unnecessary idle threads.
+    *
+    * @param simulationsForThisThread the number of simulations assigned to this
+    *                                 thread
+    */
    public static void handleCreationOfNewThreads(long simulationsForThisThread) {
       if (simulationsForThisThread < 1) {
          return;
@@ -190,6 +315,18 @@ public class Main {
       createNewConcurrentSimulationThread(startedThreads, simulationsForThisThread);
    }
 
+   /**
+    * Creates and starts a new concurrent simulation thread.
+    *
+    * Instantiates a new ConcurrentSimulationThread with the current team
+    * configurations and simulation parameters, starts the thread, and
+    * adds it to the list of active threads for tracking.
+    *
+    * @param startedThreads           the list to add the new thread to for
+    *                                 tracking
+    * @param simulationsForThisThread the number of matches this thread should
+    *                                 simulate
+    */
    public static void createNewConcurrentSimulationThread(
          List<ConcurrentSimulationThread> startedThreads,
          long simulationsForThisThread) {
@@ -199,6 +336,16 @@ public class Main {
       startedThreads.add(thread);
    }
 
+   /**
+    * Waits for all simulation threads to complete execution.
+    *
+    * This method joins each thread in the started threads list, ensuring
+    * that the main thread waits for all simulations to complete before
+    * proceeding to result aggregation and display.
+    *
+    * Handles InterruptedException by setting the interrupt flag and logging
+    * a warning, allowing graceful degradation if threads are interrupted.
+    */
    public static void waitForAllThreadsToFinish() {
       for (ConcurrentSimulationThread currentThread : startedThreads) {
          try {
@@ -212,6 +359,16 @@ public class Main {
       }
    }
 
+   /**
+    * Displays comprehensive statistics for both team compositions.
+    *
+    * This method prints detailed information about each team including
+    * agent compositions, relative power calculations, and other relevant
+    * statistics used in the simulation.
+    *
+    * @param teamOne the first team composition to display
+    * @param teamTwo the second team composition to display
+    */
    public static void printTeamStats(TeamComp teamOne, TeamComp teamTwo) {
       System.out.println("\nTeam 1 stats:");
       teamOne.printStats();
@@ -219,6 +376,18 @@ public class Main {
       teamTwo.printStats();
    }
 
+   /**
+    * Displays comprehensive match simulation statistics.
+    *
+    * This method presents formatted statistics including:
+    * - Total number of matches simulated
+    * - Match win records for both teams
+    * - Total round wins for both teams
+    * - 50/50 round outcomes for both teams
+    * - Map used for the simulation
+    *
+    * All numbers are formatted with locale-appropriate separators for readability.
+    */
    public static void printMatchStats() {
       long totalMatchesSimulated = SimulationStatisticsCollector.getTeam1MatchWins()
             + SimulationStatisticsCollector.getTeam2MatchWins();
@@ -234,11 +403,24 @@ public class Main {
             match.getMap().toUpperCase());
    }
 
+   /**
+    * Initializes timing measurement for the simulation.
+    *
+    * Records the current system time as the start time and logs
+    * the simulation start event for performance analysis.
+    */
    public static void startLoggingElapsedTime() {
       startMilliseconds = System.currentTimeMillis();
       logger.log(Level.INFO, "Simulation started...");
    }
 
+   /**
+    * Completes timing measurement and logs the elapsed simulation time.
+    *
+    * Calculates the total elapsed time since startLoggingElapsedTime()
+    * was called and logs both milliseconds and formatted seconds for
+    * performance analysis.
+    */
    public static void finishLoggingElapsedTime() {
       long elapsedMilliseconds = System.currentTimeMillis() - startMilliseconds;
       double elapsedSeconds = elapsedMilliseconds / 1000.0;
@@ -246,6 +428,11 @@ public class Main {
             new Object[] { elapsedMilliseconds, String.format("%.3f", elapsedSeconds) });
    }
 
+   /**
+    * Main method for the Valorant Match Simulator application.
+    *
+    * @param arg Because yknow... we need this.
+    */
    public static void main(String[] arg) {
       // Startup message
       startupMessage();
@@ -265,32 +452,22 @@ public class Main {
 
       System.out.printf("Running %s simulations across %d threads...%n", numberFormat.format(matches), numThreads);
 
-      // Create and start threads
-      checkAvailableThreads(numThreads);
-      for (int i = 0; i < numThreads; i++) {
-         long simulationsForThisThread = getSimulationsForThread(i, simulationsPerThread, remainderSimulations);
-         handleCreationOfNewThreads(simulationsForThisThread);
-      }
+      long totalSimulatedMatches = 0;
 
-      // Wait for all threads to complete
-      waitForAllThreadsToFinish();
-      long totalSimulatedMatches = SimulationStatisticsCollector.getTeam1MatchWins()
-            + SimulationStatisticsCollector.getTeam2MatchWins();
-      if (totalSimulatedMatches != matches) {
-         logger.log(Level.WARNING,
-               "Discrepancy in total matches simulated! Expected: {0}, Actual: {1}, Running new single-threaded simulations to compensate.",
-               new Object[] { matches,
-                     SimulationStatisticsCollector.getTeam1MatchWins()
-                           + SimulationStatisticsCollector.getTeam2MatchWins() });
-      }
-
-      // Run any remaining simulations in the main thread
-      for (long i = 0; i < matches - totalSimulatedMatches; i++) {
-         if (fastSimulation) {
-            match.simulateMatchFast();
-         } else {
-            match.simulateMatch();
+      while (totalSimulatedMatches < matches) {
+         // Create and start threads
+         checkAvailableThreads(numThreads);
+         for (int i = 0; i < numThreads; i++) {
+            long simulationsForThisThread = getSimulationsForThread(i, simulationsPerThread, remainderSimulations);
+            handleCreationOfNewThreads(simulationsForThisThread);
          }
+
+         // Wait for all threads to complete
+         waitForAllThreadsToFinish();
+         totalSimulatedMatches = SimulationStatisticsCollector.getTeam1MatchWins()
+               + SimulationStatisticsCollector.getTeam2MatchWins();
+         simulationsPerThread = (matches - totalSimulatedMatches) / numThreads;
+         remainderSimulations = (matches - totalSimulatedMatches) % numThreads;
       }
 
       // Print simulation results

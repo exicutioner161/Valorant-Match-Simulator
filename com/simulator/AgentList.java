@@ -44,7 +44,7 @@ import java.util.Map;
  * - Reset capability to baseline statistics
  *
  * @author exicutioner161
- * @version 0.1.9-alpha
+ * @version 0.2.0-alpha
  * @see Agent
  */
 
@@ -142,15 +142,37 @@ public class AgentList {
       private final Agent yoru = new Agent("Yoru", DUELIST, 5, 3, 3,
                   10, AGGRO);
 
+      /**
+       * Constructs an AgentList with agents balanced for a specific map.
+       *
+       * This constructor initializes all agents with their baseline statistics
+       * and then applies map-specific balance adjustments based on the provided
+       * map name.
+       *
+       * @param mapInput the name of the map to balance agents for (case-insensitive)
+       */
       public AgentList(String mapInput) {
             balanceAgentsByMapAndUpdateList(mapInput);
       }
 
+      /**
+       * Constructs an AgentList with agents at their baseline statistics.
+       *
+       * This constructor initializes all agents with their default power levels
+       * without applying any map-specific adjustments.
+       */
       public AgentList() {
             addAgentsToStorage();
       }
 
-      // AgentList handling methods
+      /************* AgentList management methods *************/
+      /**
+       * Populates the agent list and map with all available Valorant agents.
+       *
+       * This method clears the existing list and map, then adds all agent instances
+       * to both the list (for ordered iteration) and the map (for fast name-based
+       * lookup). All agents are added with their baseline statistics.
+       */
       private void addAgentsToStorage() {
             list.clear();
             list.add(astra);
@@ -186,12 +208,27 @@ public class AgentList {
             }
       }
 
+      /**
+       * Resets all agents in the list to their baseline relative power levels.
+       *
+       * This method iterates through all agents and calls their reset method
+       * to restore their original power values before any map-specific adjustments.
+       */
       private void resetAgentsToBaseline() {
             for (Agent agent : list) {
                   agent.resetToBaselineRelativePower();
             }
       }
 
+      /**
+       * Balances all agents based on the specified map and updates the storage.
+       *
+       * This method first resets all agents to their baseline statistics, then
+       * applies map-specific balance adjustments based on the provided map name.
+       * After balancing, it refreshes the agent storage to ensure consistency.
+       *
+       * @param map the name of the map to balance agents for (case-insensitive)
+       */
       public final void balanceAgentsByMapAndUpdateList(String map) {
             resetAgentsToBaseline();
             switch (map.trim().toLowerCase()) {
@@ -214,7 +251,11 @@ public class AgentList {
             addAgentsToStorage();
       }
 
-      // Map-specific balancing methods
+      /************* Map-specific balancing methods *************/
+
+      /**
+       * Applies agent balance adjustments specific to the map.
+       */
       public void abyssBalance() {
             // Abyss:
             // No change for Fade
@@ -246,6 +287,9 @@ public class AgentList {
             yoru.changeCurrentRelativePower(-1);
       }
 
+      /**
+       * Applies agent balance adjustments specific to the map.
+       */
       public void ascentBalance() {
             // Ascent:
             // No change for Astra
@@ -277,6 +321,9 @@ public class AgentList {
             waylay.changeCurrentRelativePower(1);
       }
 
+      /**
+       * Applies agent balance adjustments specific to the map.
+       */
       public void bindBalance() {
             // Bind:
             // No change for Breach
@@ -308,6 +355,9 @@ public class AgentList {
             yoru.changeCurrentRelativePower(2);
       }
 
+      /**
+       * Applies agent balance adjustments specific to the map.
+       */
       public void breezeBalance() {
             // Breeze:
             // No change for Iso
@@ -339,6 +389,9 @@ public class AgentList {
             yoru.changeCurrentRelativePower(1);
       }
 
+      /**
+       * Applies agent balance adjustments specific to the map.
+       */
       public void corrodeBalance() {
             // Corrode:
             // No change for Astra
@@ -370,6 +423,9 @@ public class AgentList {
             waylay.changeCurrentRelativePower(1);
       }
 
+      /**
+       * Applies agent balance adjustments specific to the map.
+       */
       public void fractureBalance() {
             // Fracture:
             // No change for Astra
@@ -401,6 +457,9 @@ public class AgentList {
             yoru.changeCurrentRelativePower(-2);
       }
 
+      /**
+       * Applies agent balance adjustments specific to the map.
+       */
       public void havenBalance() {
             // Haven:
             // No change for Deadlock
@@ -432,6 +491,9 @@ public class AgentList {
             yoru.changeCurrentRelativePower(3);
       }
 
+      /**
+       * Applies agent balance adjustments specific to the map.
+       */
       public void iceboxBalance() {
             // Icebox:
             // No change for Clove
@@ -463,6 +525,9 @@ public class AgentList {
             yoru.changeCurrentRelativePower(-2);
       }
 
+      /**
+       * Applies agent balance adjustments specific to the map.
+       */
       public void lotusBalance() {
             // Lotus:
             // No change for Iso
@@ -494,6 +559,9 @@ public class AgentList {
             yoru.changeCurrentRelativePower(1);
       }
 
+      /**
+       * Applies agent balance adjustments specific to the map.
+       */
       public void pearlBalance() {
             // Pearl:
             // No change for Chamber
@@ -525,6 +593,9 @@ public class AgentList {
             yoru.changeCurrentRelativePower(1);
       }
 
+      /**
+       * Applies agent balance adjustments specific to the map.
+       */
       public void splitBalance() {
             // Split:
             // No change for Breach
@@ -556,6 +627,9 @@ public class AgentList {
             yoru.changeCurrentRelativePower(2);
       }
 
+      /**
+       * Applies agent balance adjustments specific to the map.
+       */
       public void sunsetBalance() {
             // Sunset:
             // No change for Astra
@@ -587,16 +661,34 @@ public class AgentList {
             yoru.changeCurrentRelativePower(1);
       }
 
-      // Getter methods
-      /*
-       * Returns an unmodifiable view of the agent list. Modifications to the returned
-       * list will result in an UnsupportedOperationException.
+      /************* Getter methods *************/
+      /**
+       * Returns an immutable view of the agent list.
+       *
+       * This method provides access to all agents in the list while preventing
+       * external modification. The returned list reflects the current state of
+       * agent balancing and cannot be modified directly.
+       *
+       * @return an unmodifiable List containing all Agent objects
+       * @throws UnsupportedOperationException if any modification operation is
+       *                                       attempted on the returned list
        */
       public List<Agent> getList() {
             return java.util.Collections.unmodifiableList(list);
       }
 
-      // Case-insensitive agent retrieval with null safety and trimming
+      /**
+       * Retrieves an agent by name using case-insensitive lookup.
+       *
+       * This method performs a case-insensitive search for an agent by name,
+       * automatically trimming whitespace from the input. It provides null
+       * safety by returning null for null input rather than throwing an exception.
+       *
+       * @param name the name of the agent to retrieve (case-insensitive,
+       *             automatically trimmed)
+       * @return the Agent object with the specified name, or null if not found or if
+       *         name is null
+       */
       public Agent getAgentByName(String name) {
             if (name == null) {
                   return null;

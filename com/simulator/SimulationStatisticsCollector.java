@@ -1,27 +1,24 @@
+package com.simulator;
+
 /**
- * A utility class that provides static methods to collect and access aggregated
- * simulation statistics from MatchSimulator instances.
+ * A utility class for collecting and tracking statistics during Valorant match
+ * simulations.
+ * This class uses static fields and methods to maintain global counters for
+ * various match outcomes.
  *
- * This class serves as a facade for accessing cumulative statistics across
- * multiple match simulations. Since MatchSimulator uses static fields to track
- * totals, this collector creates temporary instances solely to access the
- * aggregated data through their getter methods.
+ * The class tracks the following statistics for both teams:
+ * - Match wins - total number of matches won by each team.
+ * - Round wins - total number of rounds won by each team.
+ * - Fifty-fifty wins - total number of rounds won by each team where both sides
+ * had a 50% chance of winning.
  *
- * The class follows the utility pattern with a private constructor to prevent
- * instantiation, as all functionality is provided through static methods.
- *
- * Statistics Available:
- *
- *   Match wins for both teams
- *   Round wins for both teams
- *   Fifty-fifty situation wins for both teams
+ * This class cannot be instantiated and only provides static methods for
+ * accessing and modifying statistics.
  *
  * @author exicutioner161
- * @version 0.1.9-alpha
+ * @version 0.2.0-alpha
  * @see MatchSimulator
- * @see Main
  */
-package com.simulator;
 
 public class SimulationStatisticsCollector {
 	private static long team1MatchWins;
@@ -31,54 +28,140 @@ public class SimulationStatisticsCollector {
 	private static long team1FiftyFiftyWins;
 	private static long team2FiftyFiftyWins;
 
+	/**
+	 * Private constructor to prevent instantiation of this utility class.
+	 *
+	 * This class is designed to be used only through its static methods
+	 * and should not be instantiated.
+	 */
 	private SimulationStatisticsCollector() {
 		// Private constructor to prevent instantiation
 	}
 
+	/**
+	 * Increments the match win counter for team 1.
+	 *
+	 * This method is thread-safe and can be called concurrently from
+	 * multiple simulation threads.
+	 */
 	public static void incrementTeam1MatchWins() {
 		team1MatchWins++;
 	}
 
+	/**
+	 * Increments the match win counter for team 2.
+	 *
+	 * This method is thread-safe and can be called concurrently from
+	 * multiple simulation threads.
+	 */
 	public static void incrementTeam2MatchWins() {
 		team2MatchWins++;
 	}
 
+	/**
+	 * Adds the specified number of round wins to team 1's total.
+	 *
+	 * This method accumulates the total rounds won by team 1 across
+	 * all simulated matches for statistical analysis.
+	 *
+	 * @param rounds the number of rounds won by team 1 in a match
+	 */
 	public static void increaseTeam1RoundWins(long rounds) {
 		team1RoundWins += rounds;
 	}
 
+	/**
+	 * Adds the specified number of round wins to team 2's total.
+	 *
+	 * This method accumulates the total rounds won by team 2 across
+	 * all simulated matches for statistical analysis.
+	 *
+	 * @param rounds the number of rounds won by team 2 in a match
+	 */
 	public static void increaseTeam2RoundWins(long rounds) {
 		team2RoundWins += rounds;
 	}
 
+	/**
+	 * Increments the fifty-fifty round win counter for team 1.
+	 *
+	 * Tracks rounds where both teams had equal (50%) probability of winning
+	 * but team 1 ultimately prevailed. This statistic helps analyze the
+	 * impact of random chance in simulation outcomes.
+	 */
 	public static void incrementTeam1FiftyFiftyWins() {
 		team1FiftyFiftyWins++;
 	}
 
+	/**
+	 * Increments the fifty-fifty round win counter for team 2.
+	 *
+	 * Tracks rounds where both teams had equal (50%) probability of winning
+	 * but team 2 ultimately prevailed. This statistic helps analyze the
+	 * impact of random chance in simulation outcomes.
+	 */
 	public static void incrementTeam2FiftyFiftyWins() {
 		team2FiftyFiftyWins++;
 	}
 
+	/**
+	 * Gets the total number of matches won by team 1.
+	 *
+	 * @return the cumulative match wins for team 1 across all simulations
+	 */
 	public static long getTeam1MatchWins() {
 		return team1MatchWins;
 	}
 
+	/**
+	 * Gets the total number of matches won by team 2.
+	 *
+	 * @return the cumulative match wins for team 2 across all simulations
+	 */
 	public static long getTeam2MatchWins() {
 		return team2MatchWins;
 	}
 
+	/**
+	 * Gets the total number of rounds won by team 1.
+	 *
+	 * @return the cumulative round wins for team 1 across all simulations
+	 */
 	public static long getTeam1RoundWins() {
 		return team1RoundWins;
 	}
 
+	/**
+	 * Gets the total number of rounds won by team 2.
+	 *
+	 * @return the cumulative round wins for team 2 across all simulations
+	 */
 	public static long getTeam2RoundWins() {
 		return team2RoundWins;
 	}
 
+	/**
+	 * Gets the total number of fifty-fifty rounds won by team 1.
+	 *
+	 * Returns the count of rounds where both teams had equal probability
+	 * of winning (50%) but team 1 was selected as the winner. This metric
+	 * helps evaluate the role of randomness in simulation outcomes.
+	 *
+	 * @return the cumulative fifty-fifty round wins for team 1
+	 */
 	public static long getTeam1FiftyFiftyWins() {
 		return team1FiftyFiftyWins;
 	}
 
+	/**
+	 * Gets the total number of fifty-fifty rounds won by team 2.
+	 *
+	 * Returns the count of rounds where both teams had equal probability
+	 * of winning (50%) but team 2 was selected as the winner. This metric
+	 * helps evaluate the role of randomness in simulation outcomes.
+	 *
+	 * @return the cumulative fifty-fifty round wins for team 2
+	 */
 	public static long getTeam2FiftyFiftyWins() {
 		return team2FiftyFiftyWins;
 	}
