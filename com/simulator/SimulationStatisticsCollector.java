@@ -1,32 +1,43 @@
 package com.simulator;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 /**
+ * <p>
  * A utility class for collecting and tracking statistics during Valorant match
- * simulations.
- * This class uses static fields and methods to maintain global counters for
+ * simulations. This class uses static fields and methods to maintain global
+ * counters for
  * various match outcomes.
+ * </p>
  *
+ * <p>
  * The class tracks the following statistics for both teams:
- * - Match wins - total number of matches won by each team.
- * - Round wins - total number of rounds won by each team.
- * - Fifty-fifty wins - total number of rounds won by each team where both sides
- * had a 50% chance of winning.
+ * </p>
+ * <ul>
+ * <li>Match wins - total number of matches won by each team.</li>
+ * <li>Round wins - total number of rounds won by each team.</li>
+ * <li>Fifty-fifty wins - total number of rounds won by each team where both
+ * sides
+ * had a 50% chance of winning.</li>
+ * </ul>
  *
+ * <p>
  * This class cannot be instantiated and only provides static methods for
  * accessing and modifying statistics.
+ * </p>
  *
  * @author exicutioner161
- * @version 0.2.0-alpha
+ * @version 0.2.1-alpha
  * @see MatchSimulator
  */
 
 public class SimulationStatisticsCollector {
-	private static long team1MatchWins;
-	private static long team2MatchWins;
-	private static long team1RoundWins;
-	private static long team2RoundWins;
-	private static long team1FiftyFiftyWins;
-	private static long team2FiftyFiftyWins;
+	private static AtomicLong team1MatchWins;
+	private static AtomicLong team2MatchWins;
+	private static AtomicLong team1RoundWins;
+	private static AtomicLong team2RoundWins;
+	private static AtomicLong team1FiftyFiftyWins;
+	private static AtomicLong team2FiftyFiftyWins;
 
 	/**
 	 * Private constructor to prevent instantiation of this utility class.
@@ -45,7 +56,7 @@ public class SimulationStatisticsCollector {
 	 * multiple simulation threads.
 	 */
 	public static void incrementTeam1MatchWins() {
-		team1MatchWins++;
+		team1MatchWins.incrementAndGet();
 	}
 
 	/**
@@ -55,7 +66,7 @@ public class SimulationStatisticsCollector {
 	 * multiple simulation threads.
 	 */
 	public static void incrementTeam2MatchWins() {
-		team2MatchWins++;
+		team2MatchWins.incrementAndGet();
 	}
 
 	/**
@@ -67,7 +78,7 @@ public class SimulationStatisticsCollector {
 	 * @param rounds the number of rounds won by team 1 in a match
 	 */
 	public static void increaseTeam1RoundWins(long rounds) {
-		team1RoundWins += rounds;
+		team1RoundWins.addAndGet(rounds);
 	}
 
 	/**
@@ -79,7 +90,7 @@ public class SimulationStatisticsCollector {
 	 * @param rounds the number of rounds won by team 2 in a match
 	 */
 	public static void increaseTeam2RoundWins(long rounds) {
-		team2RoundWins += rounds;
+		team2RoundWins.addAndGet(rounds);
 	}
 
 	/**
@@ -90,7 +101,7 @@ public class SimulationStatisticsCollector {
 	 * impact of random chance in simulation outcomes.
 	 */
 	public static void incrementTeam1FiftyFiftyWins() {
-		team1FiftyFiftyWins++;
+		team1FiftyFiftyWins.incrementAndGet();
 	}
 
 	/**
@@ -101,7 +112,7 @@ public class SimulationStatisticsCollector {
 	 * impact of random chance in simulation outcomes.
 	 */
 	public static void incrementTeam2FiftyFiftyWins() {
-		team2FiftyFiftyWins++;
+		team2FiftyFiftyWins.incrementAndGet();
 	}
 
 	/**
@@ -110,7 +121,7 @@ public class SimulationStatisticsCollector {
 	 * @return the cumulative match wins for team 1 across all simulations
 	 */
 	public static long getTeam1MatchWins() {
-		return team1MatchWins;
+		return team1MatchWins.get();
 	}
 
 	/**
@@ -119,7 +130,7 @@ public class SimulationStatisticsCollector {
 	 * @return the cumulative match wins for team 2 across all simulations
 	 */
 	public static long getTeam2MatchWins() {
-		return team2MatchWins;
+		return team2MatchWins.get();
 	}
 
 	/**
@@ -128,7 +139,7 @@ public class SimulationStatisticsCollector {
 	 * @return the cumulative round wins for team 1 across all simulations
 	 */
 	public static long getTeam1RoundWins() {
-		return team1RoundWins;
+		return team1RoundWins.get();
 	}
 
 	/**
@@ -137,7 +148,7 @@ public class SimulationStatisticsCollector {
 	 * @return the cumulative round wins for team 2 across all simulations
 	 */
 	public static long getTeam2RoundWins() {
-		return team2RoundWins;
+		return team2RoundWins.get();
 	}
 
 	/**
@@ -150,7 +161,7 @@ public class SimulationStatisticsCollector {
 	 * @return the cumulative fifty-fifty round wins for team 1
 	 */
 	public static long getTeam1FiftyFiftyWins() {
-		return team1FiftyFiftyWins;
+		return team1FiftyFiftyWins.get();
 	}
 
 	/**
@@ -163,6 +174,6 @@ public class SimulationStatisticsCollector {
 	 * @return the cumulative fifty-fifty round wins for team 2
 	 */
 	public static long getTeam2FiftyFiftyWins() {
-		return team2FiftyFiftyWins;
+		return team2FiftyFiftyWins.get();
 	}
 }

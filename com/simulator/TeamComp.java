@@ -6,26 +6,39 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 
 /**
+ * <p>
  * Represents a team composition in a Valorant match simulator.
+ * </p>
  *
- * A team composition consists of 5 agents. No more, no less.
+ * <p>
+ * A team composition consists of 5 agents. No more, no less.<br/>
  * There are three main styles:
- * AGGRO - focused on fast pushes and entries.
- * CONTROL - focused on map control and utility.
- * MIDRANGE - focused on flexibility and utility attrition.
+ * </p>
+ * <ul>
+ * <li>AGGRO - focused on fast pushes and entries.</li>
+ * <li>CONTROL - focused on map control and utility.</li>
+ * <li>MIDRANGE - focused on flexibility and utility attrition.</li>
+ * </ul>
  *
+ * <p>
  * The counter system follows a rock-paper-scissors pattern:
- * Aggro counters Control
- * Control counters Midrange
- * Midrange counters Aggro
+ * </p>
+ * <ul>
+ * <li>Aggro counters Control</li>
+ * <li>Control counters Midrange</li>
+ * <li>Midrange counters Aggro</li>
+ * </ul>
  *
+ * <p>
  * Team statistics are automatically calculated when the team reaches full
  * capacity (5 agents) and include both base stats and map-adjusted "true" stats
  * that account for agent effectiveness on specific maps.
+ * </p>
  *
  * @author exicutioner161
- * @version 0.2.0-alpha
+ * @version 0.2.1-alpha
  * @see Agent
+ * @see AgentList
  */
 
 public class TeamComp {
@@ -49,16 +62,20 @@ public class TeamComp {
    }
 
    /**
-    * Constructs a new team composition with map-specific agent balancing.
+    * Constructs a team composition for a given map with five specified agents.
     *
-    * Initializes an empty team composition with all statistics set to zero
-    * and creates an AgentList balanced for the specified map. The team can
-    * hold up to 5 agents and will automatically calculate statistics when
-    * agents are added.
+    * Initializes the internal agent list balanced for {@code mapInput} and
+    * sequentially adds the five provided agent names to the team, calculating
+    * stats upon reaching full capacity.
     *
-    * @param mapInput the name of the map to balance agents for (case-insensitive)
+    * @param mapInput the map name used to balance agent relative power
+    * @param agent1   first agent name
+    * @param agent2   second agent name
+    * @param agent3   third agent name
+    * @param agent4   fourth agent name
+    * @param agent5   fifth agent name
+    * @throws IllegalArgumentException if any agent name is invalid
     */
-
    public TeamComp(String mapInput, String agent1, String agent2,
          String agent3, String agent4, String agent5) {
       teamComposition = new ArrayList<>();
@@ -80,6 +97,14 @@ public class TeamComp {
 
    }
 
+   /**
+    * Constructs an empty team composition balanced for the specified map.
+    *
+    * Initializes an empty composition and prepares agent data balanced for the
+    * given map. Agents can be added subsequently via {@link #addAgent(String)}.
+    *
+    * @param mapInput the map name used to balance agent relative power
+    */
    public TeamComp(String mapInput) {
       teamComposition = new ArrayList<>();
       baseAggro = 0;
@@ -100,6 +125,12 @@ public class TeamComp {
     * Initializes an empty team composition with all statistics set to zero
     * and creates an AgentList with baseline agent power levels (no map
     * adjustments). The team can hold up to 5 agents.
+    */
+   /**
+    * Constructs an empty team composition using baseline agent statistics.
+    *
+    * No map adjustments are applied; agents can be added via
+    * {@link #addAgent(String)}.
     */
    public TeamComp() {
       teamComposition = new ArrayList<>();
@@ -132,6 +163,12 @@ public class TeamComp {
          teamComposition.add(agentList.getAgentByName(trimmedInput));
          numAgents++;
          if (numAgents == TEAM_SIZE) {
+            // Apply splash bonuses once the team is complete before computing stats
+            for (Agent ag : teamComposition) {
+               if (ag != null) {
+                  ag.applyStyleSplash();
+               }
+            }
             addStats();
          }
          return;
@@ -185,29 +222,49 @@ public class TeamComp {
     * are more likely to adopt that style.
     */
    public void setStyle() {
+      // If stats haven't been calculated yet, set a default style
+      if (maxTotalTruePoints <= 0) {
+         style = Style.MIDRANGE; // Default to midrange if no stats available
+         return;
+      }
+
       double styleRoll = ThreadLocalRandom.current().nextDouble() * maxTotalTruePoints;
       calculateStyle(styleRoll);
    }
 
    /**
-    * Checks if this team's style can counter the opposing team's style.
+    * Sets the team's playing style.
     *
-    * Implements the rock-paper-scissors counter system:
-    * - AGGRO counters CONTROL
-    * - CONTROL counters MIDRANGE
-    * - MIDRANGE counters AGGRO
-    *
-    * @param input the opposing team composition to check against
-    * @return true if this team's style counters the opponent's style, false
-    *         otherwise
+    * @param newStyle the new style to assign (AGGRO, CONTROL, or MIDRANGE),
+    *                 or null to default to MIDRANGE
     */
-   public boolean canCounter(TeamComp input) {
+   public void setStyle(Style newStyle) {
+      this.style = (newStyle != null) ? newStyle : Style.MIDRANGE;
+   }
+
+   /**
+    * Determines whether this team's current style counters the opponent's
+    * style.
+    *
+    * Implements the rock-paper-scissors logic: AGGRO > CONTROL, CONTROL >
+    * MIDRANGE, MIDRANGE > AGGRO. If either team's style is not initialized, this
+    * returns {@code false}.
+    *
+    * @param otherTeam the opponent team composition to compare against
+    * @return {@code true} if this team's style counters the opponent; otherwise
+    *         {@code false}
+    */
+   public boolean canCounter(TeamComp otherTeam) {
+      if (this.style == null || otherTeam == null || otherTeam.style == null) {
+         return false; // Can't counter if styles aren't initialized
+      }
+
       // Team 1 aggro vs Team 2 control
-      boolean aggroAndControl = style.equals(Style.AGGRO) && input.getStyle().equals(Style.CONTROL);
+      boolean aggroAndControl = style.equals(Style.AGGRO) && otherTeam.getStyle().equals(Style.CONTROL);
       // Team 1 control vs Team 2 midrange
-      boolean controlAndMidrange = style.equals(Style.CONTROL) && input.getStyle().equals(Style.MIDRANGE);
+      boolean controlAndMidrange = style.equals(Style.CONTROL) && otherTeam.getStyle().equals(Style.MIDRANGE);
       // Team 1 midrange vs Team 2 aggro
-      boolean midrangeAndAggro = style.equals(Style.MIDRANGE) && input.getStyle().equals(Style.AGGRO);
+      boolean midrangeAndAggro = style.equals(Style.MIDRANGE) && otherTeam.getStyle().equals(Style.AGGRO);
 
       return aggroAndControl || controlAndMidrange || midrangeAndAggro;
    }

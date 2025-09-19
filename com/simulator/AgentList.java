@@ -6,45 +6,63 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * <p>
  * Represents a list of all agents in Valorant and manages their relative power
  * levels based on different maps. This class maintains a collection of all
  * available agents and provides functionality to adjust their relative power
  * levels according to my understanding of the current state of the Valorant
  * meta.
+ * </p>
  *
+ * <p>
  * The class includes:
- * - A complete list of all Valorant agents with their base stats
- * - Map-specific power adjustments for each agent
- * - Methods to retrieve and manage agent information
+ * </p>
+ * <ul>
+ * <li>A complete list of all Valorant agents with their base stats</li>
+ * <li>Map-specific power adjustments for each agent</li>
+ * <li>Methods to retrieve and manage agent information</li>
+ * </ul>
  *
+ * <p>
  * Each agent is initialized with four primary attributes:
- * - Aggro
- * - Control
- * - Midrange
- * - Relative Power
+ * </p>
+ * <ul>
+ * <li>Aggro</li>
+ * <li>Control</li>
+ * <li>Midrange</li>
+ * <li>Relative Power</li>
+ * </ul>
  *
+ * <p>
  * The class supports the following maps:
- * - Abyss
- * - Ascent
- * - Bind
- * - Breeze
- * - Corrode
- * - Fracture
- * - Haven
- * - Icebox
- * - Lotus
- * - Pearl
- * - Split
- * - Sunset
+ * </p>
+ * <ul>
+ * <li>Abyss</li>
+ * <li>Ascent</li>
+ * <li>Bind</li>
+ * <li>Breeze</li>
+ * <li>Corrode</li>
+ * <li>Fracture</li>
+ * <li>Haven</li>
+ * <li>Icebox</li>
+ * <li>Lotus</li>
+ * <li>Pearl</li>
+ * <li>Split</li>
+ * <li>Sunset</li>
+ * </ul>
  *
+ * <p>
  * Key features:
- * - Map-specific agent balancing
- * - Agent retrieval by name (case-insensitive)
- * - Immutable list view of agents
- * - Reset capability to baseline statistics
+ * </p>
+ * <ul>
+ * <li>Map-specific agent balancing</li>
+ * <li>Agent retrieval by name (case-insensitive)</li>
+ * <li>Immutable list view of agents</li>
+ * <li>Reset capability to baseline statistics</li>
+ * </ul>
  *
  * @author exicutioner161
- * @version 0.2.0-alpha
+ * @version 0.2.1-alpha
  * @see Agent
  */
 
@@ -97,7 +115,7 @@ public class AgentList {
       private final Agent jett = new Agent("Jett", DUELIST, 9, 2, 0,
                   7, AGGRO);
 
-      private final Agent kayo = new Agent("KAYO", INITIATOR, 7, 3, 1,
+      private final Agent kayo = new Agent("KAY/O", INITIATOR, 7, 3, 1,
                   9, NONE);
 
       private final Agent killjoy = new Agent("Killjoy", SENTINEL, 3, 7, 1,

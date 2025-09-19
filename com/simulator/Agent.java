@@ -3,21 +3,30 @@ package com.simulator;
 import java.util.Objects;
 
 /**
+ * <p>
  * This class represents an Agent in Valorant with their stylistic attributes
- * and relative power in the current state of the game.
- * Features:
- * - Static attributes (name, role, baseAggro, baseControl, baseMidrange)
- * - A dynamic attribute (relative power) that can be modified
- * depending on the map and current meta.
- * - Splash attributes for certain agents that provide minor boosts to specific
+ * and relative power in the state of the game as of September 17, 2025.
+ * </p>
+ *
+ * <p>
+ * <b>Features:</b>
+ * </p>
+ * <ul>
+ * <li>Static attributes (name, role, baseAggro, baseControl, baseMidrange)</li>
+ * <li>A dynamic attribute (relative power) that can be modified
+ * depending on the map and current meta.</li>
+ * <li>Splash attributes for certain agents that provide minor boosts to
+ * specific
  * styles. They can be one of: AGGRO, CONTROL, MIDRANGE, or NONE. They increase
- * an agent's true style value of the corresponding style by 1 point.
- * - True style values that are used in calculating advantages in matches
- * - Base style values are displayed to the user.
- * - Thread-safe implementation using synchronized methods for mutable state.
+ * an agent's true style value of the corresponding style by 1 point.</li>
+ * <li>True style values that are used in calculating advantages in matches</li>
+ * <li>Base style values are displayed to the user.</li>
+ * <li>Thread-safe implementation using synchronized methods for mutable
+ * state.</li>
+ * </ul>
  *
  * @author exicutioner161
- * @version 0.2.0-alpha
+ * @version 0.2.1-alpha
  * @see AgentList
  */
 
@@ -71,7 +80,9 @@ public class Agent {
       baselineRelativePower = relativePower;
       currentRelativePower = relativePower;
 
-      splash = splash.trim();
+      if (splash != null) {
+         splash = splash.trim();
+      }
       if (splash != null && (splash.equals("AGGRO") || splash.equals("CONTROL") || splash.equals("MIDRANGE"))) {
          this.splash = splash;
          hasSplash = true;
@@ -182,16 +193,24 @@ public class Agent {
    }
 
    /**
+    * <p>
     * Applies the agent's splash bonus to their true style values.
+    * </p>
     *
+    * <p>
     * This method modifies the true style values by adding the appropriate
     * splash bonus based on the agent's splash attribute. The bonuses are:
-    * - AGGRO: +2 to true aggro
-    * - CONTROL: +2 to true control
-    * - MIDRANGE: +3 to true midrange
-    * - NONE: No bonuses applied
+    * </p>
+    * <ul>
+    * <li>AGGRO: +2 to true aggro</li>
+    * <li>CONTROL: +2 to true control</li>
+    * <li>MIDRANGE: +3 to true midrange</li>
+    * <li>NONE: No bonuses applied</li>
+    * </ul>
     *
+    * <p>
     * This method is thread-safe and should be called after agent initialization.
+    * </p>
     */
    public synchronized void applyStyleSplash() {
       switch (splash) {

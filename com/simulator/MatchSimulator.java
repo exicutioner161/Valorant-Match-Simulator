@@ -6,45 +6,60 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Simulates matches in a Valorant match between two teams. This class handles
+ * <p>Simulates matches in a Valorant match between two teams. This class handles
  * game mechanics including round simulation, team composition creation, map
- * advantages, and match statistics.
+ * advantages, and match statistics.</p>
  *
- * The simulator takes into account:
- * - Team compositions and their stylistic counters
- * - Map-specific attacker/defender advantages
- * - Team relative power levels
- * - Randomness to simulate unpredictability
+ * <p>The simulator takes into account:</p>
+ * <ul>
+ *   <li>Team compositions and their stylistic counters</li>
+ *   <li>Map-specific attacker/defender advantages</li>
+ *   <li>Team relative power levels</li>
+ *   <li>Randomness to simulate unpredictability</li>
+ * </ul>
  *
- * A standard match consists of:
- * - First to 13 rounds
- * - Side swap after 12 rounds
- * - Overtime rules when tied at 12-12
- * - Teams need a 2-round lead to win in overtime
+ * <p>A standard match consists of:</p>
+ * <ul>
+ *   <li>First to 13 rounds</li>
+ *   <li>Side swap after 12 rounds</li>
+ *   <li>Overtime rules when tied at 12-12</li>
+ *   <li>Teams need a 2-round lead to win in overtime</li>
+ * </ul>
  *
- * Features:
- * - Regular and fast simulation modes
- * - Team agent input functionality
- * - Map selection with corresponding advantages
- * - Detailed round and match statistics
- * - Probability-based round outcomes
+ * <p>Features:</p>
+ * <ul>
+ *   <li>Regular and fast simulation modes</li>
+ *   <li>Team agent input functionality</li>
+ *   <li>Map selection with corresponding advantages</li>
+ *   <li>Detailed round and match statistics</li>
+ *   <li>Probability-based round outcomes</li>
+ * </ul>
  *
  * @author exicutioner161
- * @version 0.2.0-alpha
+ * @version 0.2.1-alpha
  * @see TeamComp
  */
 
+/**
+ * Core engine for simulating Valorant matches between two team compositions.
+ *
+ * Provides both verbose and fast simulation methods, handles round logic,
+ * overtime, side switches, and aggregates statistics. Instances are stateful
+ * across a single match; after each simulation the internal counters are
+ * reset for reuse. The last winner is preserved via
+ * {@link #getLastMatchWinner()}.
+ */
 public class MatchSimulator {
    private static final byte ROUNDS_PER_HALF = 12;
    private static final byte ROUNDS_TO_WIN = 13;
    private static final byte TEAM_SIZE = 5;
    private static final double FIFTY_FIFTY_CHANCE = 50.0;
    private static final Logger logger = Logger.getLogger(MatchSimulator.class.getName());
-   private short currentRound;
-   private short team1Rounds;
-   private short team2Rounds;
-   private short attackingTeam;
-   private short currentRoundWinner;
+   private int currentRound;
+   private int team1Rounds;
+   private int team2Rounds;
+   private int attackingTeam;
+   private int currentRoundWinner;
    private double team1Chance;
    private double cachedMapAdvantage;
    private double cachedRelativePowerAdvantage;
@@ -54,6 +69,9 @@ public class MatchSimulator {
    private String map;
    private final TeamComp teamOne;
    private final TeamComp teamTwo;
+   // Stores the last completed match's winner (1 or 2). Useful after
+   // simulateMatch* resets state.
+   private int lastMatchWinner;
 
    /**
     * Constructs a new MatchSimulator with two team compositions.
@@ -120,6 +138,8 @@ public class MatchSimulator {
          }
       }
 
+      // Record winner before resetting internal state
+      lastMatchWinner = (team1Rounds > team2Rounds) ? 1 : 2;
       incrementMatchWins();
       addTotalRounds();
       printMatchWinner();
@@ -164,6 +184,8 @@ public class MatchSimulator {
          }
       }
 
+      // Record winner before resetting internal state
+      lastMatchWinner = (team1Rounds > team2Rounds) ? 1 : 2;
       incrementMatchWins();
       addTotalRounds();
       resetMatch();
@@ -209,7 +231,7 @@ public class MatchSimulator {
          throw new IllegalArgumentException("Invalid input in setMap. Map name cannot be null.");
       }
       map = mapOfMatch.toLowerCase();
-      mapAdvantageCalculated = false;
+      setAttackerMapAdvantage();
    }
 
    /**
@@ -358,6 +380,7 @@ public class MatchSimulator {
       double stylisticAdvantage = ThreadLocalRandom.current().nextDouble() * 4 + 1;
       boolean team1CanCounter = teamOne.canCounter(teamTwo);
       boolean team2CanCounter = teamTwo.canCounter(teamOne);
+
       if (attackingTeam == 1) { // Team 1 is attacking
          double attackingAdvantage = getRelativePowerAdvantage() + cachedMapAdvantage;
          if (team1CanCounter && !team2CanCounter) {
@@ -488,7 +511,7 @@ public class MatchSimulator {
     * @param team the attacking team number (1 or 2)
     * @throws IllegalArgumentException if team is not 1 or 2
     */
-   public void setAttackingTeam(short team) {
+   public void setAttackingTeam(int team) {
       attackingTeam = switch (team) {
          case 1, 2 -> team;
          default -> throw new IllegalArgumentException("Team must be 1 or 2, got: " + team);
@@ -590,7 +613,13 @@ public class MatchSimulator {
    }
 
    /**
-    * Determines which team won the match based on final round scores.
+    * Determines the winner of the current (not-yet-reset) match based on round
+    * scores.
+    *
+    * Note: If called after {@link #simulateMatch()} or
+    * {@link #simulateMatchFast()} completes, this may not be meaningful because
+    * the internal counters are reset. For post-simulation queries, prefer
+    * {@link #getLastMatchWinner()}.
     *
     * @return 1 if team 1 won, 2 if team 2 won
     */
@@ -599,6 +628,19 @@ public class MatchSimulator {
          return 1;
       }
       return 2;
+   }
+
+   /**
+    * Returns the winner of the most recently completed match.
+    *
+    * This value is set at the end of the simulation before internal counters
+    * are reset, allowing external code to reliably determine the winner.
+    *
+    * @return 1 if team 1 won the last match, 2 if team 2 won, or 0 if no match
+    *         has completed yet
+    */
+   public int getLastMatchWinner() {
+      return lastMatchWinner;
    }
 
    /**
@@ -667,5 +709,19 @@ public class MatchSimulator {
          setAttackerMapAdvantage();
       }
       return cachedMapAdvantage;
+   }
+
+   /**
+    * Returns the team 1 win chance as a percentage (0-100).
+    *
+    * This method calculates and returns the probability that team 1 will win
+    * a round based on their team composition advantages, map advantages, and
+    * relative power levels. The value is calculated by adding various
+    * advantage factors to the base 50% chance.
+    *
+    * @return the win chance for team 1 as a percentage between 0 and 100
+    */
+   public double getTeamOneWinChance() {
+      return FIFTY_FIFTY_CHANCE + calculateTeam1Advantage();
    }
 }
