@@ -36,7 +36,7 @@ import java.util.logging.Logger;
  * </ul>
  *
  * @author exicutioner161
- * @version 0.2.1-alpha
+ * @version 1.0
  * @see TeamComp
  */
 

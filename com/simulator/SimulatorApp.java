@@ -72,7 +72,7 @@ import javafx.stage.Stage;
  * </ul>
  *
  * @author exicutioner161
- * @version 0.2.1-alpha
+ * @version 1.0
  * @see Main
  * @see TeamComp
  * @see MatchSimulator
@@ -134,7 +134,7 @@ public class SimulatorApp extends Application {
         // Build normalization map after 'agents' array is initialized
         agentCanonicalMap = buildAgentCanonicalMap();
 
-        primaryStage.setTitle("Valorant Match Simulator v0.2.1-alpha");
+        primaryStage.setTitle("Valorant Match Simulator v1.0");
 
         // Ensure the app exits when the last window closes
         Platform.setImplicitExit(true);

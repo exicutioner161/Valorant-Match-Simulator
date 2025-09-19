@@ -36,7 +36,7 @@ import java.util.logging.Logger;
  * </p>
  *
  * @author exicutioner161
- * @version 0.2.1-alpha
+ * @version 1.0
  * @see Agent
  * @see AgentList
  */

@@ -51,7 +51,7 @@ import java.util.logging.Logger;
  * </ul>
  *
  * @author exicutioner161
- * @version 0.2.1-alpha
+ * @version 1.0
  * @see MatchSimulator
  * @see TeamComp
  * @see SimulationStatisticsCollector
@@ -86,7 +86,7 @@ public class Main {
    public static void startupMessage() {
       String largeSeparator = "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
       System.out.println(largeSeparator);
-      System.out.println("Valorant Match Simulator v0.2.1-alpha");
+      System.out.println("Valorant Match Simulator v1.0");
       System.out.println("By exicutioner161\n");
    }
 
