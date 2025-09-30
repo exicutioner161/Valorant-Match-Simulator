@@ -14,10 +14,9 @@ import java.util.logging.Logger;
  *
  * <p>
  * This class serves as the entry point and orchestrates the entire simulation
- * process,
- * supporting both GUI and console modes of operation. It handles user
- * interaction,
- * simulation configuration, multi-threaded execution, and result presentation.
+ * process, supporting both GUI and console modes of operation. It handles user
+ * interaction, simulation configuration, multi-threaded execution, and result
+ * presentation.
  * </p>
  *
  * <p>
@@ -48,6 +47,22 @@ import java.util.logging.Logger;
  * <ul>
  * <li>Default: Launches GUI mode</li>
  * <li>Runs in console mode with --console argument</li>
+ * </ul>
+ *
+ * <p>
+ * Implementation notes:
+ * </p>
+ * <ul>
+ * <li><b>GUI-first with safe fallback:</b> The application attempts to launch
+ * the JavaFX GUI first. If GUI initialization fails for any reason (e.g.
+ * missing native access, module access issues), we log the full exception and
+ * immediately fall back to the console workflow.</li>
+ * <li><b>Non-interactive guard:</b> When falling back (or explicitly running)
+ * in console mode, if an interactive console is not available (for example,
+ * when run under certain IDE configurations), we print brief usage guidance
+ * and avoid blocking for input.</li>
+ * <li><b>Threading:</b> Console simulations use multiple threads and aggregate
+ * results after joining all workers.</li>
  * </ul>
  *
  * @author exicutioner161
@@ -543,22 +558,62 @@ public class Main {
             new Object[] { elapsedMilliseconds, String.format("%.3f", elapsedSeconds) });
    }
 
+   /**
+    * Attempts to launch the JavaFX GUI. On any failure, logs the error and
+    * immediately falls back to console mode.
+    *
+    * <p>
+    * Details:
+    * </p>
+    * <ul>
+    * <li>Reads a system property set by JavaFX startup code (simulator.guiFailed)
+    * to detect early construction errors.</li>
+    * <li>Catches all {@link Throwable} to ensure a robust fallback path even if
+    * third-party code throws {@code Error}s.</li>
+    * </ul>
+    */
    public static void launchGUI(String[] args) {
       try {
          System.out.println("Launching Valorant Match Simulator GUI...");
          SimulatorApp.main(args);
+         // If SimulatorApp signaled a failure, request console fallback
+         if (Boolean.parseBoolean(System.getProperty("simulator.guiFailed", "false"))) {
+            consoleMode = true;
+            System.out.println("GUI failed to initialize. Falling back to console mode...");
+            runConsoleMode();
+            return;
+         }
          consoleMode = false; // GUI launched successfully
-      } catch (Exception e) {
-         System.err.println("Failed to launch GUI mode: " + e.getMessage());
+      } catch (Throwable e) {
+         System.err.println("Failed to launch GUI mode: " + e);
          System.out.println("Falling back to console mode...");
          consoleMode = true;
+         // Immediately run console fallback so users aren't left with a no-op
+         runConsoleMode();
       }
    }
 
+   /**
+    * Runs the interactive console workflow. If no interactive console is
+    * present, prints usage hints and returns without blocking.
+    */
    public static void runConsoleMode() {
       // Console mode - original simulation logic
       // Startup message
       startupMessage();
+
+      // Detect non-interactive environment (e.g., IDE debug console) and avoid
+      // blocking for input
+      if (System.console() == null) {
+         System.err.println(
+               """
+                     Interactive console is not available in this run configuration.
+                     To use console mode, run from a terminal window, or use one of these options:
+                      - GUI: mvn javafx:run
+                      - Console: mvn -Dexec.args="--console" exec:java
+                     """);
+         return;
+      }
 
       // Set up simulation parameters
       setUpSimulationParameters(teamOne, teamTwo, match);
@@ -617,11 +672,17 @@ public class Main {
     * </p>
     * <ul>
     * <li>GUI Mode: Launches JavaFX interface (default)</li>
-    * <li>Console Mode: Traditional command-line simulation (use --console
+    * <li>Console Mode: Traditional command-line simulation (use {@code --console}
     * argument)</li>
     * </ul>
     *
-    * @param args Command line arguments - use "--console" for console mode
+    * <p>
+    * If GUI launch fails (e.g., due to module access or native access issues),
+    * the application logs the failure and automatically falls back to console
+    * mode.
+    * </p>
+    *
+    * @param args Command line arguments (use {@code --console} for console mode)
     */
    public static void main(String[] args) {
       // Debug: Print arguments received
@@ -642,6 +703,10 @@ public class Main {
          runConsoleMode();
       } else {
          launchGUI(args);
+         // If GUI failed and requested fallback, run console now
+         if (consoleMode) {
+            runConsoleMode();
+         }
       }
    }
 }

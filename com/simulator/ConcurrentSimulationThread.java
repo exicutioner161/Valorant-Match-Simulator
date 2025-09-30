@@ -14,15 +14,15 @@ package com.simulator;
  */
 
 public class ConcurrentSimulationThread extends Thread {
-	private static final short NUM_THREADS = (short) Runtime.getRuntime().availableProcessors();
-	private final TeamComp team1;
-	private final TeamComp team2;
-	private final long simulationsToRun;
-	private final boolean fastSimulation;
+   private static final short NUM_THREADS = (short) Runtime.getRuntime().availableProcessors();
+   private final TeamComp team1;
+   private final TeamComp team2;
+   private final long simulationsToRun;
+   private final boolean fastSimulation;
 	// Propagated match configuration to ensure local simulator uses the same map
 	// and attacker
-	private final String map;
-	private final int attackingTeam;
+   private final String map;
+   private final int attackingTeam;
 
 	/**
 	 * <p>
@@ -44,15 +44,15 @@ public class ConcurrentSimulationThread extends Thread {
 	 *                         baseline)
 	 * @param attackingTeam    the team that starts attacking (1 or 2)
 	 */
-	public ConcurrentSimulationThread(TeamComp team1, TeamComp team2,
-			long simulationsToRun, boolean fastSimulation, String map, int attackingTeam) {
-		this.team1 = team1;
-		this.team2 = team2;
-		this.simulationsToRun = simulationsToRun;
-		this.fastSimulation = fastSimulation;
-		this.map = map;
-		this.attackingTeam = attackingTeam;
-	}
+   public ConcurrentSimulationThread(TeamComp team1, TeamComp team2,
+   		long simulationsToRun, boolean fastSimulation, String map, int attackingTeam) {
+      this.team1 = team1;
+      this.team2 = team2;
+      this.simulationsToRun = simulationsToRun;
+      this.fastSimulation = fastSimulation;
+      this.map = map;
+      this.attackingTeam = attackingTeam;
+   }
 
 	/**
 	 * <p>
@@ -71,27 +71,27 @@ public class ConcurrentSimulationThread extends Thread {
 	 * SimulationStatisticsCollector for thread-safe aggregation.
 	 * </p>
 	 */
-	@Override
-	public void run() {
-		// Create per-thread copies of the team compositions to avoid shared mutable
-		// state
-		TeamComp localTeam1 = (map != null && !map.isBlank()) ? new TeamComp(map) : new TeamComp();
-		TeamComp localTeam2 = (map != null && !map.isBlank()) ? new TeamComp(map) : new TeamComp();
-
-		createTeamComps(localTeam1, localTeam2);
-
-		MatchSimulator localMatch = new MatchSimulator(localTeam1, localTeam2);
-		if (map != null && !map.isBlank()) {
-			localMatch.setMap(map);
-		}
-		localMatch.setAttackingTeam(attackingTeam == 1 ? 1 : 2);
-
-		if (fastSimulation) {
-			simulateMatchesFast(localMatch);
-		} else {
-			simulateMatches(localMatch);
-		}
-	}
+   @Override
+   public void run() {
+   	// Create per-thread copies of the team compositions to avoid shared mutable
+   	// state
+      TeamComp localTeam1 = (map != null && !map.isBlank()) ? new TeamComp(map) : new TeamComp();
+      TeamComp localTeam2 = (map != null && !map.isBlank()) ? new TeamComp(map) : new TeamComp();
+   
+      createTeamComps(localTeam1, localTeam2);
+   
+      MatchSimulator localMatch = new MatchSimulator(localTeam1, localTeam2);
+      if (map != null && !map.isBlank()) {
+         localMatch.setMap(map);
+      }
+      localMatch.setAttackingTeam(attackingTeam == 1 ? 1 : 2);
+   
+      if (fastSimulation) {
+         simulateMatchesFast(localMatch);
+      } else {
+         simulateMatches(localMatch);
+      }
+   }
 
 	/**
 	 * <p>
@@ -107,18 +107,18 @@ public class ConcurrentSimulationThread extends Thread {
 	 * @param localTeam1 the thread-local copy of team 1 to populate
 	 * @param localTeam2 the thread-local copy of team 2 to populate
 	 */
-	public void createTeamComps(TeamComp localTeam1, TeamComp localTeam2) {
-		for (Agent a : team1.getTeamComp()) {
-			if (a != null) {
-				localTeam1.addAgent(a.getName());
-			}
-		}
-		for (Agent a : team2.getTeamComp()) {
-			if (a != null) {
-				localTeam2.addAgent(a.getName());
-			}
-		}
-	}
+   public void createTeamComps(TeamComp localTeam1, TeamComp localTeam2) {
+      for (Agent a : team1.getTeamComp()) {
+         if (a != null) {
+            localTeam1.addAgent(a.getName());
+         }
+      }
+      for (Agent a : team2.getTeamComp()) {
+         if (a != null) {
+            localTeam2.addAgent(a.getName());
+         }
+      }
+   }
 
 	/**
 	 * <p>
@@ -128,11 +128,11 @@ public class ConcurrentSimulationThread extends Thread {
 	 *
 	 * @param localMatch the per-thread {@link MatchSimulator} instance to run
 	 */
-	public void simulateMatches(MatchSimulator localMatch) {
-		for (long i = 0; i < simulationsToRun; i++) {
-			localMatch.simulateMatch();
-		}
-	}
+   public void simulateMatches(MatchSimulator localMatch) {
+      for (long i = 0; i < simulationsToRun; i++) {
+         localMatch.simulateMatch();
+      }
+   }
 
 	/**
 	 * <p>
@@ -142,11 +142,11 @@ public class ConcurrentSimulationThread extends Thread {
 	 *
 	 * @param localMatch the per-thread {@link MatchSimulator} instance to run fast
 	 */
-	public void simulateMatchesFast(MatchSimulator localMatch) {
-		for (long i = 0; i < simulationsToRun; i++) {
-			localMatch.simulateMatchFast();
-		}
-	}
+   public void simulateMatchesFast(MatchSimulator localMatch) {
+      for (long i = 0; i < simulationsToRun; i++) {
+         localMatch.simulateMatchFast();
+      }
+   }
 
 	/**
 	 * <p>
@@ -161,7 +161,7 @@ public class ConcurrentSimulationThread extends Thread {
 	 *
 	 * @return the number of available processors as the optimal thread count
 	 */
-	public static short getOptimalThreadCount() {
-		return NUM_THREADS;
-	}
+   public static short getOptimalThreadCount() {
+      return NUM_THREADS;
+   }
 }

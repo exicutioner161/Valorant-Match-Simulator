@@ -32,12 +32,21 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 
 public class SimulationStatisticsCollector {
-	private static AtomicLong team1MatchWins;
-	private static AtomicLong team2MatchWins;
-	private static AtomicLong team1RoundWins;
-	private static AtomicLong team2RoundWins;
-	private static AtomicLong team1FiftyFiftyWins;
-	private static AtomicLong team2FiftyFiftyWins;
+	private static final AtomicLong team1MatchWins;
+	private static final AtomicLong team2MatchWins;
+	private static final AtomicLong team1RoundWins;
+	private static final AtomicLong team2RoundWins;
+	private static final AtomicLong team1FiftyFiftyWins;
+	private static final AtomicLong team2FiftyFiftyWins;
+
+	static {
+		team1MatchWins = new AtomicLong(0);
+		team2MatchWins = new AtomicLong(0);
+		team1RoundWins = new AtomicLong(0);
+		team2RoundWins = new AtomicLong(0);
+		team1FiftyFiftyWins = new AtomicLong(0);
+		team2FiftyFiftyWins = new AtomicLong(0);
+	}
 
 	/**
 	 * Private constructor to prevent instantiation of this utility class.
@@ -47,6 +56,22 @@ public class SimulationStatisticsCollector {
 	 */
 	private SimulationStatisticsCollector() {
 		// Private constructor to prevent instantiation
+	}
+
+	/**
+	 * Resets all statistics counters to zero.
+	 * <p>
+	 * Useful for ensuring isolated unit tests and reusing the statistics
+	 * collector between simulation runs.
+	 * </p>
+	 */
+	public static void resetStats() {
+		team1MatchWins.set(0);
+		team2MatchWins.set(0);
+		team1RoundWins.set(0);
+		team2RoundWins.set(0);
+		team1FiftyFiftyWins.set(0);
+		team2FiftyFiftyWins.set(0);
 	}
 
 	/**

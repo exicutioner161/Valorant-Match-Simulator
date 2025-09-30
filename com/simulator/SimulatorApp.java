@@ -68,7 +68,21 @@ import javafx.stage.Stage;
  * <li>Comprehensive validation of team selections</li>
  * <li>Detailed statistical output including win rates and team analysis</li>
  * <li>Asynchronous simulation execution to maintain UI responsiveness</li>
- * <li>CSS-styled interface with professional appearance</li>
+ * <li>CSS-styled interface with professional appearance (gracefully degrades if
+ * styles are missing)</li>
+ * </ul>
+ *
+ * <p>
+ * Implementation notes:
+ * </p>
+ * <ul>
+ * <li><b>CSS fallback:</b> The stylesheet is resolved from the classpath; if it
+ * is not found, the app logs a warning and proceeds without styles.</li>
+ * <li><b>Results binding:</b> The footer results area is a shared component
+ * updated from simulation task callbacks. All UI updates occur on the FX
+ * thread (via {@code Platform.runLater} or Task event handlers).</li>
+ * <li><b>Progress throttling:</b> Background workers aggregate progress and
+ * publish periodic updates to avoid excessive UI chatter.</li>
  * </ul>
  *
  * @author exicutioner161
@@ -85,10 +99,10 @@ public class SimulatorApp extends Application {
     private final List<ComboBox<String>> team1Agents = new ArrayList<>();
     private final List<ComboBox<String>> team2Agents = new ArrayList<>();
     private TextField simulationCountField;
-    private TextArea resultsArea;
     private ProgressBar progressBar;
     private Button simulateButton;
     private Label statusLabel;
+    private TextArea resultsArea; // footer results text area shown in UI
     private static final String ARIAL_FONT = "Arial";
     private static final Logger logger = Logger.getLogger(SimulatorApp.class.getName());
     private static final NumberFormat numberFormat = NumberFormat.getInstance();
@@ -120,60 +134,84 @@ public class SimulatorApp extends Application {
      * Main entry point for the JavaFX application.
      * </p>
      *
+     * <p>
+     * Builds and shows the primary window. Stylesheet loading is optional — if
+     * {@code styles.css} is not present on the classpath, the app logs a warning
+     * and proceeds without styles. Any startup failure sets the
+     * {@code simulator.guiFailed} system property, prints a full stack trace, and
+     * lets the launcher (Main) fall back to console mode.
+     * </p>
+     *
      * @param primaryStage the primary stage for the application
      */
     @Override
     public void start(Stage primaryStage) {
-        // Use a daemon-backed executor so it won't keep the JVM alive
-        executorService = Executors.newSingleThreadExecutor(r -> {
-            Thread thread = new Thread(r, "sim-ui-worker");
-            thread.setDaemon(true);
-            return thread;
-        });
+        try {
+            // Use a daemon-backed executor so it won't keep the JVM alive
+            executorService = Executors.newSingleThreadExecutor(r -> {
+                Thread thread = new Thread(r, "sim-ui-worker");
+                thread.setDaemon(true);
+                return thread;
+            });
 
-        // Build normalization map after 'agents' array is initialized
-        agentCanonicalMap = buildAgentCanonicalMap();
+            // Build normalization map after 'agents' array is initialized
+            agentCanonicalMap = buildAgentCanonicalMap();
 
-        primaryStage.setTitle("Valorant Match Simulator v1.0");
+            primaryStage.setTitle("Valorant Match Simulator v1.0");
 
-        // Ensure the app exits when the last window closes
-        Platform.setImplicitExit(true);
+            // Ensure the app exits when the last window closes
+            Platform.setImplicitExit(true);
 
-        // Allow adaptive window size with reasonable minimums
-        primaryStage.setMinWidth(800);
-        primaryStage.setMinHeight(600);
+            // Allow adaptive window size with reasonable minimums
+            primaryStage.setMinWidth(800);
+            primaryStage.setMinHeight(600);
 
-        // Create main layout
-        BorderPane root = new BorderPane();
-        root.setPadding(new Insets(15));
-        root.getStyleClass().add("root-pane");
+            // Create main layout
+            BorderPane root = new BorderPane();
+            root.setPadding(new Insets(15));
+            root.getStyleClass().add("root-pane");
 
-        // Create sections
-        VBox header = createHeaderSection();
-        HBox mainContent = createMainContent();
-        VBox footer = createFooterSection();
+            // Create sections
+            VBox header = createHeaderSection();
+            HBox mainContent = createMainContent();
+            VBox footer = createFooterSection();
 
-        root.setTop(header);
-        root.setCenter(mainContent);
-        root.setBottom(footer);
+            root.setTop(header);
+            root.setCenter(mainContent);
+            root.setBottom(footer);
 
-        // Create scene without hard-coded size so it adapts to content
-        Scene scene = new Scene(root);
-        scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
-
-        primaryStage.setScene(scene);
-        // Size stage to fit initial scene content
-        primaryStage.sizeToScene();
-        primaryStage.setOnCloseRequest(_ -> {
-            if (executorService != null) {
-                executorService.shutdownNow();
+            // Create scene without hard-coded size so it adapts to content
+            Scene scene = new Scene(root);
+            var cssUrl = getClass().getResource("/styles.css");
+            if (cssUrl != null) {
+                scene.getStylesheets().add(cssUrl.toExternalForm());
+            } else {
+                System.err.println("styles.css not found on classpath; launching without styles.");
             }
-            // Explicitly terminate the JavaFX platform and JVM
-            Platform.exit();
-            System.exit(0);
-        });
 
-        primaryStage.show();
+            primaryStage.setScene(scene);
+            // Size stage to fit initial scene content
+            primaryStage.sizeToScene();
+            primaryStage.setOnCloseRequest(_ -> {
+                if (executorService != null) {
+                    executorService.shutdownNow();
+                }
+                // Explicitly terminate the JavaFX platform and JVM
+                Platform.exit();
+                System.exit(0);
+            });
+
+            primaryStage.show();
+        } catch (Throwable t) {
+            // Signal to the launcher that GUI failed so it can fallback to console
+            System.setProperty("simulator.guiFailed", "true");
+            logger.log(Level.SEVERE, "JavaFX GUI failed to start", t);
+            try {
+                Platform.exit();
+            } catch (IllegalStateException _) {
+                // FX platform may not be initialized or already stopping
+            }
+        }
     }
 
     @Override
@@ -300,12 +338,12 @@ public class SimulatorApp extends Application {
                 }
                 logger.log(Level.INFO, "Applied text agents for {0} via Enter: {1}", new Object[] { teamName,
                         textInput.getText() });
-            } catch (IllegalArgumentException ex) {
-                showValidationErrors(List.of(ex.getMessage()));
+            } catch (IllegalArgumentException _) {
+                showValidationErrors(List.of("Invalid agent list. Please check spellings and count (5)."));
             }
         });
 
-        Button applyTextBtn = new Button("Apply Text");
+        Button applyTextBtn = new Button("Add Agents");
         applyTextBtn.setPrefWidth(200);
         applyTextBtn.setMaxWidth(Double.MAX_VALUE);
         applyTextBtn.getStyleClass().add("apply-text-button");
@@ -317,8 +355,8 @@ public class SimulatorApp extends Application {
                 }
                 logger.log(Level.INFO, "Applied text agents for {0} via button: {1}", new Object[] { teamName,
                         textInput.getText() });
-            } catch (IllegalArgumentException ex) {
-                showValidationErrors(List.of(ex.getMessage()));
+            } catch (IllegalArgumentException _) {
+                showValidationErrors(List.of("Invalid agent list. Please check spellings and count (5)."));
             }
         });
 
@@ -402,6 +440,11 @@ public class SimulatorApp extends Application {
     /**
      * <p>
      * Creates the footer section with results display.
+     * </p>
+     *
+     * <p>
+     * The TextArea created here is stored in the {@code resultsArea} field so
+     * background Task callbacks can update it when simulations complete or fail.
      * </p>
      *
      * @return VBox containing results area
@@ -948,7 +991,9 @@ public class SimulatorApp extends Application {
 
     /**
      * <p>
-     * Runs the simulation in a background thread.
+     * Validates selections, disables inputs, and runs the simulation on a
+     * background Task. Progress and final results are posted back to the FX thread
+     * via Task event handlers, keeping the UI responsive.
      * </p>
      */
     private void runSimulation() {
@@ -974,14 +1019,18 @@ public class SimulatorApp extends Application {
 
         // Handle task completion
         simulationTask.setOnSucceeded(_ -> {
-            resultsArea.setText(simulationTask.getValue());
+            if (resultsArea != null) {
+                resultsArea.setText(simulationTask.getValue());
+            }
             simulateButton.setDisable(false);
             progressBar.setVisible(false);
             statusLabel.setText("Simulation completed successfully!");
         });
 
         simulationTask.setOnFailed(_ -> {
-            resultsArea.setText("Simulation failed: " + simulationTask.getException().getMessage());
+            if (resultsArea != null) {
+                resultsArea.setText("Simulation failed: " + simulationTask.getException().getMessage());
+            }
             simulateButton.setDisable(false);
             progressBar.setVisible(false);
             statusLabel.setText("Simulation failed");
