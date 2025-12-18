@@ -1,3 +1,4 @@
+# This project is no longer being maintained.
 # Valorant Match Simulator
 Match Simulator for Valorant using my own version of Anderzz's SD 2.0
 Built with Java 24
